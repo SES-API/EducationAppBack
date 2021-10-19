@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'rest_framework',
     #swager:
     'drf_yasg',
+    #account:
+    'account.apps.AccountConfig',
 ]
 
 MIDDLEWARE = [
@@ -127,3 +129,6 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+#set drf use which user model: 
+AUTH_USER_MODEL="account.User"
