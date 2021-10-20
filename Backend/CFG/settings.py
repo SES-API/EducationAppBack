@@ -26,7 +26,8 @@ SECRET_KEY = 'django-insecure-_%hv*n6r4sn&@r1&ep&39%z9l-w*kfe_3x^oip1s4jj7(hqxf^
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'sesapi.pythonanywhere.com'
+    'sesapi.pythonanywhere.com',
+    'localhost'
 ]
 
 
@@ -126,6 +127,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+# STATIC_ROOT = BASE_DIR / 'static'
+STATICFILES_DIRS = [
+    BASE_DIR / "static"
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
