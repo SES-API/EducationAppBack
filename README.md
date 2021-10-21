@@ -18,7 +18,7 @@ manage.py migrate
 you can create superuser if you want:
 manage.py createsuperuser
 
-
+dont forget create a .env file from .env-sample and fill it
 
 and run server:
 manage.py runserver
