@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework import status
 import random
 #-----------------------------
-from .serializers import SendregisterEmailSerializer
+from .serializers import SendregisterEmailSerializer,SendpasswordresetEmailSerializer
 # Create your views here.
 
 User_Model=get_user_model
@@ -38,4 +38,31 @@ class SendRegisterEmail(GenericAPIView):
             email.fail_silently = False
             email.send()
             return Response({'code':randomcode},status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+#send an email for reset password when forgot password
+class SendResetPasswordEmail(GenericAPIView):
+    serializer_class=SendpasswordresetEmailSerializer
+    def post(self,request,*args, **kwargs):
+        print(request.data)
+        serializer=self.get_serializer(data=request.data)
+        randomcode = random.randrange(111111, 999999)
+        if serializer.is_valid():
+            if(get_user_model().objects.filter(email=serializer.validated_data['email'])[0].first_name   or   get_user_model().objects.filter(email=serializer.validated_data['email'])[0].last_name):
+                email_body = render_to_string("account/email.html",{"randomcode":randomcode,"full_name":(get_user_model().objects.filter(email=serializer.validated_data['email']))[0].get_full_name})
+               
+            else:
+                email_body = render_to_string("account/email.html",{"randomcode":randomcode,"full_name":(get_user_model().objects.filter(email=serializer.validated_data['email']))[0].username})
+            email = EmailMessage(
+                'ACTIVATION CODE',
+                email_body,
+                'SES API TEAM',
+                [serializer.data['email']],
+            )
+            email.content_subtype = "html"
+            email.fail_silently = False
+            email.send()
+            return Response({'code':randomcode})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
