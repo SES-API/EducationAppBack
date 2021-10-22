@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework import status
 import random
 #-----------------------------
-from .serializers import SendregisterEmailSerializer,SendpasswordresetEmailSerializer
+from .serializers import SendregisterEmailSerializer,SendpasswordresetEmailSerializer,ResetPasswordSerializer
 # Create your views here.
 
 User_Model=get_user_model
@@ -66,3 +66,26 @@ class SendResetPasswordEmail(GenericAPIView):
             email.send()
             return Response({'code':randomcode})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+#reset password view after confirm reset password email
+class ResetPasswordView(UpdateAPIView):
+    serializer_class=ResetPasswordSerializer
+    model =get_user_model()
+    permissions=(AllowAny)
+    def update(self,request):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.object=User_Model.objects.filter(email=serializer.validated_data['email'])
+            self.object.set_password(serializer.data.get("new_password1"))
+            self.object.save()
+            response = {
+                    'status': 'success',
+                    'code': status.HTTP_200_OK,
+                    'message': 'Password updated successfully',
+                    'data': []
+            }
+            return Response(response,status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

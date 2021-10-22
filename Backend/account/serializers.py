@@ -33,3 +33,18 @@ class SendpasswordresetEmailSerializer(serializers.Serializer):
         if not User_Model.objects.filter(email=data['email']):
             raise serializers.ValidationError("Email Not Exist")
         return data
+
+
+#Serializer for reset password after confirm email
+class ResetPasswordSerializer(serializers.Serializer):
+    model = User_Model
+
+    new_password1 = serializers.CharField(required=True)
+    new_password2 = serializers.CharField(required=True)
+    email=serializers.EmailField(required=True)
+    def validate(self,data):
+        if data['new_password1']!=data['new_password2']:
+            raise serializers.ValidationError("Passwords are not the same")
+        if not User_Model.objects.filter(email=data['email']):
+            raise serializers.ValidationError("Email Not Exist")
+        return data
