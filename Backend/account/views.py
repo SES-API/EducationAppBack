@@ -2,8 +2,8 @@ from django.shortcuts import render
 from django.contrib.auth import get_user_model
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
-from rest_framework.generics import GenericAPIView,UpdateAPIView, CreateAPIView
-from rest_framework.permissions import AllowAny
+from rest_framework.generics import GenericAPIView, UpdateAPIView, CreateAPIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 import random
@@ -14,28 +14,43 @@ from .serializers import *
 User_Model=get_user_model
 
 
-# make swagger right
+
 #register
 class RegisterationView(CreateAPIView):
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
-    def register(self, request):
+    def create(self, request,*args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        # header?
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 
 #change password
-class ChangePasswordView(GenericAPIView):
+class ChangePasswordView(UpdateAPIView):
     serializer_class = ChangePasswordSerializer
-    def post(self, request):
-        # 
-        return Response() #
-    pass
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, queryset=None):
+        obj = self.request.user
+        return obj
+
+    def update(self, request,*args, **kwargs):
+        self.object = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.object.set_password(serializer.data.get("new_password1"))
+            self.object.save()
+            response = {
+                    'status': 'success',
+                    'code': status.HTTP_200_OK,
+                    'message': 'Password updated successfully',
+                    'data': []
+            }
+            return Response(response, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 #send an email when user is registering

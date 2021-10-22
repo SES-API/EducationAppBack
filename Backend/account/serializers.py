@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 
 User_Model=get_user_model()
 
-
+# create users
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User_Model
@@ -34,11 +34,20 @@ class UserSerializer(serializers.ModelSerializer):
         # user.save()
         return user
 
+#change password
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True, max_length=30)
+    new_password1 = serializers.CharField(required=True, max_length=30)
+    new_password2 = serializers.CharField(required=True, max_length=30)
 
-class ChangePasswordSerializer():
-    # old_password = 
-    # new_password = 
-    pass
+    def validate(self, data):
+        user = self.context['request'].user
+        if not user.check_password(data.get('old_password')):
+            raise serializers.ValidationError(('old password was entered incorrectly.'))
+        if data['new_password1']!=data['new_password2']:
+            raise serializers.ValidationError("Passwords are not the same")
+        return data
+    
 
 
 #send email before register a user:
