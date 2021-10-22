@@ -27,7 +27,7 @@ schema_view = get_schema_view(
       default_version='v1',
       description="Test description",
       terms_of_service="https://www.google.com/policies/terms/",
-      contact=openapi.Contact(email="amirmahdishadman98@gmail.com"),
+      contact=openapi.Contact(email="sesapiteam@gmail.com"),
     #   license=openapi.License(name="BSD License"),
    ),
    public=True,
@@ -41,10 +41,15 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
     #browsable api:
     path('api-auth/', include('rest_framework.urls')),
+    
     #swager:    
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    
+    #account app urls:
+    path('account/',include('account.urls')),
 ]
