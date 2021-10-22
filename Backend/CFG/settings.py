@@ -29,7 +29,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     'sesapi.pythonanywhere.com',
-    'localhost'
+    'localhost',
+    '127.0.0.1'
 ]
 
 

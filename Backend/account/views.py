@@ -2,21 +2,40 @@ from django.shortcuts import render
 from django.contrib.auth import get_user_model
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
-from rest_framework.generics import GenericAPIView,UpdateAPIView
+from rest_framework.generics import GenericAPIView,UpdateAPIView, CreateAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 import random
 #-----------------------------
-from .serializers import SendregisterEmailSerializer,SendpasswordresetEmailSerializer,ResetPasswordSerializer
+from .serializers import *
 # Create your views here.
 
 User_Model=get_user_model
 
 
+# make swagger right
+#register
+class RegisterationView(CreateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]
 
-#register and change password here
+    def register(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        # header?
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+
+
+#change password
+class ChangePasswordView(GenericAPIView):
+    serializer_class = ChangePasswordSerializer
+    def post(self, request):
+        # 
+        return Response() #
+    pass
 
 
 #send an email when user is registering
