@@ -29,9 +29,8 @@ class UserSerializer(serializers.ModelSerializer):
             email = validated_data['email'],
             first_name = validated_data['first_name'],
             last_name = validated_data['last_name'],
+            password = validated_data['password']
         )
-        user.set_password(validated_data['password'])
-        # user.save()
         return user
 
 #change password
@@ -48,7 +47,6 @@ class ChangePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError("Passwords are not the same")
         return data
     
-
 
 #send email before register a user:
 class SendregisterEmailSerializer(serializers.Serializer):
