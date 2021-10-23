@@ -1,14 +1,9 @@
 from django.contrib import admin
 from django.urls import path,include,re_path
-# from rest_framework import routers
 from .views import *
 from rest_framework.authtoken.views import obtain_auth_token
 
 app_name='account'
-
-# router = routers.SimpleRouter()
-# router.register('register', RegisterationView)
-
 
 urlpatterns = [
     path('register/', RegisterationView.as_view(), name='register'),

@@ -7,6 +7,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 import random
+import threading
 #-----------------------------
 from .serializers import *
 # Create your views here.
@@ -53,6 +54,16 @@ class ChangePasswordView(UpdateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
+class EmailThread(threading.Thread):
+    def __init__(self, email):
+        self.email = email
+        threading.Thread.__init__(self)
+
+    def run(self):
+        self.email.send()
+
+
 #send an email when user is registering
 class SendRegisterEmail(GenericAPIView):
     serializer_class=SendregisterEmailSerializer
@@ -70,7 +81,8 @@ class SendRegisterEmail(GenericAPIView):
             )
             email.content_subtype = "html"
             email.fail_silently = False
-            email.send()
+            # email.send()
+            EmailThread(email).run()
             return Response({'code':randomcode},status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -97,7 +109,8 @@ class SendResetPasswordEmail(GenericAPIView):
             )
             email.content_subtype = "html"
             email.fail_silently = False
-            email.send()
+            # email.send()
+            EmailThread(email).start()
             return Response({'code':randomcode})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -107,13 +120,14 @@ class SendResetPasswordEmail(GenericAPIView):
 class ResetPasswordView(UpdateAPIView):
     serializer_class=ResetPasswordSerializer
     model =get_user_model()
+    # permission_classes = [AllowAny]
     permissions=(AllowAny)
     def update(self,request):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             self.object=User_Model.objects.filter(email=serializer.validated_data['email'])
             self.object.set_password(serializer.data.get("new_password1"))
-            self.object.save()
+            self.object.start()
             response = {
                     'status': 'success',
                     'code': status.HTTP_200_OK,
