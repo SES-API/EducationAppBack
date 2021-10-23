@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path,include,re_path
 from .views import *
-from rest_framework.authtoken.views import obtain_auth_token
+
 
 app_name='account'
 
@@ -12,5 +12,5 @@ urlpatterns = [
     path('send_reset_password_email/',SendResetPasswordEmail.as_view(),name='send_reset_password_email'),
     path('reset_password/',ResetPasswordView.as_view(),name='reset_password'),
     path('User/', GetUserInfo.as_view(), name='User'),
-    path('login/', obtain_auth_token, name='login'),
+    path('login/', TokenAuthenticationView.as_view(), name='login'),
 ]

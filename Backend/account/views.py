@@ -1,9 +1,11 @@
 from logging import error
 from django.db.models.query import QuerySet
-from django.shortcuts import render
+from django.contrib.auth.models import update_last_login
 from django.contrib.auth import get_user_model
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
+from django.contrib.auth.signals import user_logged_in
+from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.generics import GenericAPIView, UpdateAPIView, CreateAPIView
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -150,5 +152,17 @@ class GetUserInfo(APIView):
             return Response(serializer.data,status=status.HTTP_200_OK)
         else:
             return Response({"detail": "Authentication credentials were not provided."},status=status.HTTP_401_UNAUTHORIZED)
+
+
+#login view
+class TokenAuthenticationView(ObtainAuthToken):
     
-    
+    def post(self, request):
+        result = super(TokenAuthenticationView, self).post(request)
+        currentUserModel = get_user_model()
+        try:
+            user = currentUserModel.objects.get(username=request.data['username'])
+            update_last_login(None, user)
+        except Exception as exc:
+            return None
+        return result
