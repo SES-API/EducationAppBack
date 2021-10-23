@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from django.core.validators import RegexValidator
 
 
 User_Model=get_user_model()
@@ -36,13 +37,19 @@ class UserSerializer(serializers.ModelSerializer):
 #change password
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True, max_length=30)
-    new_password1 = serializers.CharField(required=True, max_length=30)
+    new_password1 = serializers.CharField(
+        required=True,
+        max_length=30,
+        validators=[RegexValidator(regex="^(?=.*[A-Z])",message='Password must contain at least one uppercase letter.'),
+            RegexValidator(regex="^(?=.*[0-9])",message='Password must contain at least one number.'),
+            RegexValidator(regex="^(?=.{8,})",message='Password must be eight characters or longer.')]
+        )
     new_password2 = serializers.CharField(required=True, max_length=30)
 
     def validate(self, data):
         user = self.context['request'].user
         if not user.check_password(data.get('old_password')):
-            raise serializers.ValidationError(('old password was entered incorrectly.'))
+            raise serializers.ValidationError(('Old password was entered incorrectly.'))
         if data['new_password1']!=data['new_password2']:
             raise serializers.ValidationError("Passwords are not the same")
         return data
@@ -69,7 +76,7 @@ class SendpasswordresetEmailSerializer(serializers.Serializer):
         # if not(User_model.objects.filter(email=data['email'])):
         #     raise serializers.ValidationError("there is no email like this!")
         if not User_Model.objects.filter(email=data['email']):
-            raise serializers.ValidationError("Email Not Exist")
+            raise serializers.ValidationError("Email Does Not Exist")
         return data
 
 
@@ -77,14 +84,20 @@ class SendpasswordresetEmailSerializer(serializers.Serializer):
 class ResetPasswordSerializer(serializers.Serializer):
     model = User_Model
 
-    new_password1 = serializers.CharField(required=True)
+    new_password1 = serializers.CharField(
+        required=True,
+        max_length=30,
+        validators=[RegexValidator(regex="^(?=.*[A-Z])",message='Password must contain at least one uppercase letter.'),
+            RegexValidator(regex="^(?=.*[0-9])",message='Password must contain at least one number.'),
+            RegexValidator(regex="^(?=.{8,})",message='Password must be eight characters or longer.')]
+        )
     new_password2 = serializers.CharField(required=True)
     email=serializers.EmailField(required=True)
     def validate(self,data):
         if data['new_password1']!=data['new_password2']:
             raise serializers.ValidationError("Passwords are not the same")
         if not User_Model.objects.filter(email=data['email']):
-            raise serializers.ValidationError("Email Not Exist")
+            raise serializers.ValidationError("Email Does Not Exist")
         return data
 
 

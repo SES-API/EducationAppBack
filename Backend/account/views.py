@@ -21,7 +21,7 @@ User_Model=get_user_model
 
 
 
-#register
+#register after the user confirmed their email
 class RegisterationView(CreateAPIView):
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
@@ -31,7 +31,6 @@ class RegisterationView(CreateAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
 
 
 #change password
@@ -57,7 +56,6 @@ class ChangePasswordView(UpdateAPIView):
             }
             return Response(response, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class EmailThread(threading.Thread):
@@ -87,7 +85,6 @@ class SendRegisterEmail(GenericAPIView):
             )
             email.content_subtype = "html"
             email.fail_silently = False
-            # email.send()
             EmailThread(email).run()
             return Response({'code':randomcode},status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -116,7 +113,6 @@ class SendResetPasswordEmail(GenericAPIView):
             )
             email.content_subtype = "html"
             email.fail_silently = False
-            # email.send()
             EmailThread(email).start()
             return Response({'code':randomcode})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -127,7 +123,6 @@ class SendResetPasswordEmail(GenericAPIView):
 class ResetPasswordView(UpdateAPIView):
     serializer_class=ResetPasswordSerializer
     model =get_user_model()
-    # permission_classes = [AllowAny]
     permissions=(AllowAny)
     def update(self,request):
         serializer = self.get_serializer(data=request.data)
