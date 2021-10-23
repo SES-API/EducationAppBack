@@ -1,3 +1,4 @@
+from logging import error
 from django.db.models.query import QuerySet
 from django.shortcuts import render
 from django.contrib.auth import get_user_model
@@ -148,6 +149,6 @@ class GetUserInfo(APIView):
             serializer = GetUserDataSerializer(request.user)
             return Response(serializer.data,status=status.HTTP_200_OK)
         else:
-            return Response("you are not loged in",status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"detail": "Authentication credentials were not provided."},status=status.HTTP_401_UNAUTHORIZED)
     
     
