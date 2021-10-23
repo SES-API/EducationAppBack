@@ -86,3 +86,9 @@ class ResetPasswordSerializer(serializers.Serializer):
         if not User_Model.objects.filter(email=data['email']):
             raise serializers.ValidationError("Email Not Exist")
         return data
+
+
+class GetUserDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User_Model
+        exclude =['password','user_permissions','groups']

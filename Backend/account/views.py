@@ -1,8 +1,10 @@
+from django.db.models.query import QuerySet
 from django.shortcuts import render
 from django.contrib.auth import get_user_model
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from rest_framework.generics import GenericAPIView, UpdateAPIView, CreateAPIView
+from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
@@ -71,8 +73,9 @@ class SendRegisterEmail(GenericAPIView):
         print(request.data)
         serializer=self.get_serializer(data=request.data)
         randomcode = random.randrange(111111, 999999)
+        msg="Registration"
         if serializer.is_valid():
-            email_body = render_to_string("account/email.html",{"randomcode":randomcode,"full_name":serializer.data['full_name']})
+            email_body = render_to_string("account/email.html",{"message":msg,"randomcode":randomcode,"full_name":serializer.data['full_name']})
             email = EmailMessage(
                 'ACTIVATION CODE',
                 email_body,
@@ -95,12 +98,13 @@ class SendResetPasswordEmail(GenericAPIView):
         print(request.data)
         serializer=self.get_serializer(data=request.data)
         randomcode = random.randrange(111111, 999999)
+        msg="Reset Password"
         if serializer.is_valid():
             if(get_user_model().objects.filter(email=serializer.validated_data['email'])[0].first_name   or   get_user_model().objects.filter(email=serializer.validated_data['email'])[0].last_name):
-                email_body = render_to_string("account/email.html",{"randomcode":randomcode,"full_name":(get_user_model().objects.filter(email=serializer.validated_data['email']))[0].get_full_name})
+                email_body = render_to_string("account/email.html",{"message":msg,"randomcode":randomcode,"full_name":(get_user_model().objects.filter(email=serializer.validated_data['email']))[0].get_full_name})
                
             else:
-                email_body = render_to_string("account/email.html",{"randomcode":randomcode,"full_name":(get_user_model().objects.filter(email=serializer.validated_data['email']))[0].username})
+                email_body = render_to_string("account/email.html",{"message":msg,"randomcode":randomcode,"full_name":(get_user_model().objects.filter(email=serializer.validated_data['email']))[0].username})
             email = EmailMessage(
                 'ACTIVATION CODE',
                 email_body,
@@ -137,3 +141,13 @@ class ResetPasswordView(UpdateAPIView):
             return Response(response,status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class GetUserInfo(APIView):
+    def get(self, request):
+        if not(request.user.is_anonymous):
+            serializer = GetUserDataSerializer(request.user)
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        else:
+            return Response("you are not loged in",status=status.HTTP_401_UNAUTHORIZED)
+    
+    
