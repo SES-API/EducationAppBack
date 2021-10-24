@@ -129,7 +129,7 @@ class ResetPasswordView(UpdateAPIView):
         if serializer.is_valid():
             self.object=User_Model.objects.filter(email=serializer.validated_data['email'])
             self.object.set_password(serializer.data.get("new_password1"))
-            self.object.start()
+            self.object.save()
             response = {
                     'status': 'success',
                     'code': status.HTTP_200_OK,

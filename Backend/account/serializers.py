@@ -5,6 +5,16 @@ from django.core.validators import RegexValidator
 
 User_Model=get_user_model()
 
+
+
+Password_validation=[RegexValidator(regex="^(?=.*[A-Z])",message='Password must contain at least one uppercase letter.'),
+                    RegexValidator(regex="^(?=.*[0-9])",message='Password must contain at least one number.'),
+                    RegexValidator(regex="^(?=.{8,})",message='Password must be eight characters or longer.')]
+
+
+
+
+
 # create users
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -40,9 +50,7 @@ class ChangePasswordSerializer(serializers.Serializer):
     new_password1 = serializers.CharField(
         required=True,
         max_length=30,
-        validators=[RegexValidator(regex="^(?=.*[A-Z])",message='Password must contain at least one uppercase letter.'),
-            RegexValidator(regex="^(?=.*[0-9])",message='Password must contain at least one number.'),
-            RegexValidator(regex="^(?=.{8,})",message='Password must be eight characters or longer.')]
+        validators = Password_validation
         )
     new_password2 = serializers.CharField(required=True, max_length=30)
 
@@ -87,9 +95,7 @@ class ResetPasswordSerializer(serializers.Serializer):
     new_password1 = serializers.CharField(
         required=True,
         max_length=30,
-        validators=[RegexValidator(regex="^(?=.*[A-Z])",message='Password must contain at least one uppercase letter.'),
-            RegexValidator(regex="^(?=.*[0-9])",message='Password must contain at least one number.'),
-            RegexValidator(regex="^(?=.{8,})",message='Password must be eight characters or longer.')]
+        validators = Password_validation
         )
     new_password2 = serializers.CharField(required=True)
     email=serializers.EmailField(required=True)
