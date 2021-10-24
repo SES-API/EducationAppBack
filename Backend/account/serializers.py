@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
-
+from django.shortcuts import get_object_or_404
 
 User_Model=get_user_model()
 
@@ -104,6 +104,8 @@ class ResetPasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError("Passwords are not the same")
         if not User_Model.objects.filter(email=data['email']):
             raise serializers.ValidationError("Email Does Not Exist")
+        if get_object_or_404(User_Model, email=data['email']).check_password(data['new_password1']):
+            raise serializers.ValidationError("You must enter a new password This password is no different from the current password")
         return data
 
 

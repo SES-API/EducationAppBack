@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from django.contrib.auth.signals import user_logged_in
+from django.shortcuts import get_object_or_404
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.generics import GenericAPIView, UpdateAPIView, CreateAPIView
 from rest_framework.views import APIView
@@ -17,7 +18,7 @@ import threading
 from .serializers import *
 # Create your views here.
 
-User_Model=get_user_model
+User_Model = get_user_model()
 
 
 
@@ -122,12 +123,13 @@ class SendResetPasswordEmail(GenericAPIView):
 #reset password view after confirm reset password email
 class ResetPasswordView(UpdateAPIView):
     serializer_class=ResetPasswordSerializer
-    model =get_user_model()
+    model = User_Model
     permissions=(AllowAny)
     def update(self,request):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            self.object=User_Model.objects.filter(email=serializer.validated_data['email'])
+            # self.object = User_Model.objects.filter(email=serializer.validated_data['email'])
+            self.object=get_object_or_404(User_Model, email=serializer.validated_data['email'])
             self.object.set_password(serializer.data.get("new_password1"))
             self.object.save()
             response = {
@@ -140,6 +142,9 @@ class ResetPasswordView(UpdateAPIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+
+#user info view
 class GetUserInfo(APIView):
     def get(self, request):
         if not(request.user.is_anonymous):
