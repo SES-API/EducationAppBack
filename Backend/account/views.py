@@ -77,7 +77,7 @@ class SendRegisterEmail(GenericAPIView):
         randomcode = random.randrange(111111, 999999)
         msg="Registration"
         if serializer.is_valid():
-            email_body = render_to_string("account/email.html",{"message":msg,"randomcode":randomcode,"full_name":serializer.data['full_name']})
+            email_body = render_to_string("account/email.html",{"message":msg,"randomcode":randomcode,"full_name":serializer.data['username']})
             email = EmailMessage(
                 'ACTIVATION CODE',
                 email_body,

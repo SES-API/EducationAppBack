@@ -67,7 +67,7 @@ class ChangePasswordSerializer(serializers.Serializer):
 class SendregisterEmailSerializer(serializers.Serializer):
     model = User_Model
     email = serializers.EmailField(required=True)
-    full_name=serializers.CharField(required=True)
+    username=serializers.CharField(required=True)
 
     def validate(self,data):
         if (User_Model.objects.filter(email=data['email'])):
