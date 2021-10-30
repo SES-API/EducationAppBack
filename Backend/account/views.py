@@ -112,10 +112,11 @@ class SendResetPasswordEmail(GenericAPIView):
         msg="Reset Password"
         if serializer.is_valid():
             if(get_object_or_404(User_Model, email=serializer.validated_data['email']).first_name   or   get_object_or_404(User_Model, email=serializer.validated_data['email']).last_name):
-                email_body = render_to_string("account/email.html",{"message":msg,"randomcode":randomcode,"full_name":get_object_or_404(User_Model, email=serializer.validated_data['email']).get_full_name})
+                full_name=(get_object_or_404(User_Model, email=serializer.validated_data['email']).get_full_name)
 
             else:
-                email_body = render_to_string("account/email.html",{"message":msg,"randomcode":randomcode,"full_name":get_object_or_404(User_Model, email=serializer.validated_data['email']).username})
+                full_name=(get_object_or_404(User_Model, email=serializer.validated_data['email']).username)
+            email_body = render_to_string("account/email.html",{"message":msg,"randomcode":randomcode,"full_name":full_name})
             email = EmailMessage(
                 'ACTIVATION CODE',
                 email_body,
