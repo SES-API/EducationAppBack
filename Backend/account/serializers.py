@@ -60,6 +60,8 @@ class ChangePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError(('Old password was entered incorrectly.'))
         if data['new_password1']!=data['new_password2']:
             raise serializers.ValidationError("Passwords are not the same")
+        if data['old_password']==data['new_password1']:
+            raise serializers.ValidationError("New password cannot be the same as old password")
         return data
     
 
