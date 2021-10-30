@@ -74,6 +74,8 @@ class SendregisterEmailSerializer(serializers.Serializer):
     def validate(self,data):
         if (User_Model.objects.filter(email=data['email'])):
             raise serializers.ValidationError("There is another account with this email")
+        if (User_Model.objects.filter(username=data['username'])):
+            raise serializers.ValidationError("There is another account with this username")
         return data
 
 
