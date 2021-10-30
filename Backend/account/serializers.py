@@ -6,12 +6,9 @@ from django.shortcuts import get_object_or_404
 User_Model=get_user_model()
 
 
-
 Password_validation=[RegexValidator(regex="^(?=.*[A-Z])",message='Password must contain at least one uppercase letter.'),
                     RegexValidator(regex="^(?=.*[0-9])",message='Password must contain at least one number.'),
                     RegexValidator(regex="^(?=.{8,})",message='Password must be eight characters or longer.')]
-
-
 
 
 
@@ -44,7 +41,7 @@ class UserSerializer(serializers.ModelSerializer):
         )
         return user
 
-#change password
+#change password (forgot password)
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True, max_length=30)
     new_password1 = serializers.CharField(
@@ -57,11 +54,11 @@ class ChangePasswordSerializer(serializers.Serializer):
     def validate(self, data):
         user = self.context['request'].user
         if not user.check_password(data.get('old_password')):
-            raise serializers.ValidationError(('Old password was entered incorrectly.'))
+            raise serializers.ValidationError(('Old password was entered incorrectly'))
         if data['new_password1']!=data['new_password2']:
             raise serializers.ValidationError("Passwords are not the same")
         if data['old_password']==data['new_password1']:
-            raise serializers.ValidationError("New password cannot be the same as old password")
+            raise serializers.ValidationError("New password cannot be the same as current password")
         return data
     
 
@@ -109,7 +106,7 @@ class ResetPasswordSerializer(serializers.Serializer):
         if not User_Model.objects.filter(email=data['email']):
             raise serializers.ValidationError("Email Does Not Exist")
         if get_object_or_404(User_Model, email=data['email']).check_password(data['new_password1']):
-            raise serializers.ValidationError("You must enter a new password This password is no different from the current password")
+            raise serializers.ValidationError("New password cannot be the same as current password")
         return data
 
 
