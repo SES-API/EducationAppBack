@@ -80,7 +80,6 @@ class EmailThread(threading.Thread):
 class SendRegisterEmail(GenericAPIView):
     serializer_class=SendregisterEmailSerializer
     def post(self,request,*args, **kwargs):
-        print(request.data)
         serializer=self.get_serializer(data=request.data)
         randomcode = random.randrange(111111, 999999)
         msg="Registration"
@@ -106,7 +105,6 @@ class SendRegisterEmail(GenericAPIView):
 class SendResetPasswordEmail(GenericAPIView):
     serializer_class=SendpasswordresetEmailSerializer
     def post(self,request,*args, **kwargs):
-        print(request.data)
         serializer=self.get_serializer(data=request.data)
         randomcode = random.randrange(111111, 999999)
         msg="Reset Password"
