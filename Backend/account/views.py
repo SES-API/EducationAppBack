@@ -124,7 +124,7 @@ class SendResetPasswordEmail(GenericAPIView):
             )
             email.content_subtype = "html"
             email.fail_silently = False
-            EmailThread(email).start()
+            EmailThread(email).run()
             return Response({'code':randomcode})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
