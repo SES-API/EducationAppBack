@@ -1,5 +1,7 @@
 from logging import error
 from django.db.models.query import QuerySet
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from django.contrib.auth.models import update_last_login
 from django.contrib.auth import get_user_model
 from django.template.loader import render_to_string
@@ -23,6 +25,8 @@ User_Model = get_user_model()
 
 
 #register after the user confirmed their email
+
+@method_decorator(csrf_exempt, name='dispatch')
 class RegisterationView(CreateAPIView):
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
@@ -35,6 +39,8 @@ class RegisterationView(CreateAPIView):
 
 
 #change password
+
+@method_decorator(csrf_exempt, name='dispatch')
 class ChangePasswordView(UpdateAPIView):
     serializer_class = ChangePasswordSerializer
     permission_classes = [IsAuthenticated]
@@ -69,6 +75,8 @@ class EmailThread(threading.Thread):
 
 
 #send an email when user is registering
+
+@method_decorator(csrf_exempt, name='dispatch')
 class SendRegisterEmail(GenericAPIView):
     serializer_class=SendregisterEmailSerializer
     def post(self,request,*args, **kwargs):
@@ -93,6 +101,8 @@ class SendRegisterEmail(GenericAPIView):
 
 
 #send an email for reset password when forgot password
+
+@method_decorator(csrf_exempt, name='dispatch')
 class SendResetPasswordEmail(GenericAPIView):
     serializer_class=SendpasswordresetEmailSerializer
     def post(self,request,*args, **kwargs):
@@ -121,6 +131,8 @@ class SendResetPasswordEmail(GenericAPIView):
 
 
 #reset password view after confirm reset password email
+
+@method_decorator(csrf_exempt, name='dispatch')
 class ResetPasswordView(UpdateAPIView):
     serializer_class=ResetPasswordSerializer
     model = User_Model
@@ -145,6 +157,8 @@ class ResetPasswordView(UpdateAPIView):
 
 
 #user info view
+
+@method_decorator(csrf_exempt, name='dispatch')
 class GetUserInfo(APIView):
     def get(self, request):
         if not(request.user.is_anonymous):
@@ -155,6 +169,8 @@ class GetUserInfo(APIView):
 
 
 #login view
+
+@method_decorator(csrf_exempt, name='dispatch')
 class TokenAuthenticationView(ObtainAuthToken):
     
     def post(self, request):
