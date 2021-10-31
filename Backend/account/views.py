@@ -81,7 +81,7 @@ class SendRegisterEmail(GenericAPIView):
     serializer_class=SendregisterEmailSerializer
     def post(self,request,*args, **kwargs):
         serializer=self.get_serializer(data=request.data)
-        randomcode = random.randrange(111111, 999999)
+        randomcode = random.randrange(1111, 9999)
         msg="Registration"
         if serializer.is_valid():
             email_body = render_to_string("account/email.html",{"message":msg,"randomcode":randomcode,"full_name":serializer.data['username']})
@@ -106,7 +106,7 @@ class SendResetPasswordEmail(GenericAPIView):
     serializer_class=SendpasswordresetEmailSerializer
     def post(self,request,*args, **kwargs):
         serializer=self.get_serializer(data=request.data)
-        randomcode = random.randrange(111111, 999999)
+        randomcode = random.randrange(1111, 9999)
         msg="Reset Password"
         if serializer.is_valid():
             if(get_object_or_404(User_Model, email=serializer.validated_data['email']).first_name   or   get_object_or_404(User_Model, email=serializer.validated_data['email']).last_name):
