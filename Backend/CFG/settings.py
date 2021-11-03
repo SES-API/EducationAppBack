@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     'drf_yasg',
     #account:
     'account.apps.AccountConfig',
+    #class:
+    'class.apps.ClassConfig',
 ]
 
 MIDDLEWARE = [
