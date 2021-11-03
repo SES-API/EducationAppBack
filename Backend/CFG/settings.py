@@ -140,7 +140,7 @@ USE_TZ = True
 
 
 # media files (uploaded by users)
-MEDIA_ROOT = os.path.join(BASE_DIR, 'static/images')
+MEDIA_ROOT = BASE_DIR / "static/images"
 MEDIA_URL = '/images/'
 # DEFAULT_FILE_STORAGE
 
