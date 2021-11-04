@@ -47,6 +47,7 @@ class SetTeacher(GenericAPIView):
             teacher=User_Model.objects.filter(id=serializer.validated_data['teacher_id'])[0]
             if(request.user == class_.owner or request.user in class_.teachers.all()):
                 class_.teachers.add(teacher)
+                class_.students.remove(teacher)
                 class_.save()
             else:
                 return Response({'detail':'Forbidden'},status=status.HTTP_403_FORBIDDEN)
@@ -67,6 +68,7 @@ class SetTa(GenericAPIView):
 
             if(request.user == class_.owner or request.user in class_.tas.all() or request.user in class_.teachers.all()):
                 class_.tas.add(ta)
+                class_.students.remove(ta)
                 class_.save()
             else:
                 return Response({'detail':'Forbidden'},status=status.HTTP_403_FORBIDDEN)
