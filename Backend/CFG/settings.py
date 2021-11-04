@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_filters',
     #drf:
     'rest_framework',
     #auth token
@@ -120,12 +121,14 @@ AUTH_PASSWORD_VALIDATORS = [
 REST_FRAMEWORK = {
    'DEFAULT_AUTHENTICATION_CLASSES': (
        'rest_framework.authentication.TokenAuthentication',
-    #    'rest_framework.authentication.SessionAuthentication',
+       'rest_framework.authentication.SessionAuthentication',
    ),
    'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',
    ),
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
@@ -176,3 +179,6 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 SWAGGER_SETTINGS = {
    'USE_SESSION_AUTH': False
 }
+
+
+

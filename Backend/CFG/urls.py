@@ -56,6 +56,8 @@ urlpatterns = [
     
     #account app urls:
     path('account/',include('account.urls')),
+    #class app urls:
+    path('class/',include('class.urls')),
 ]
 
 # url for user profile images:

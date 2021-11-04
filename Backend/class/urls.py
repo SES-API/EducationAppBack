@@ -6,6 +6,7 @@ app_name='class'
 
 
 urlpatterns = [
-    # path('/', .as_view(), name='')
+    path('', ClassList.as_view(), name='classes'),
+    path('<int:pk>', ClassObject.as_view(), name='class_object')
 
 ]
