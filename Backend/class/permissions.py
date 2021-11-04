@@ -6,7 +6,6 @@ from rest_framework.permissions import SAFE_METHODS
 class OBJ__IsClassOwnerORTeacherORTaOrReadOnly(BasePermission):
     
     def has_object_permission(self, request, view, obj):
-        print(obj.teachers)
         return bool(
             request.method in SAFE_METHODS
             or
@@ -19,3 +18,4 @@ class OBJ__IsClassOwnerORTeacherORTaOrReadOnly(BasePermission):
             request.user and
             request.user == obj.owner
         )   
+ 
