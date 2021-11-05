@@ -9,7 +9,8 @@ UserModel=get_user_model()
 class University(models.Model):
     name=models.CharField(max_length=50)
 
-
+    def __str__(self):
+        return self.name
 
 class Class(models.Model):
     SEMESTER = (
@@ -32,5 +33,7 @@ class Class(models.Model):
     image=models.ImageField(upload_to="images/class_pics",null=True)
     is_active=models.BooleanField(default=False)
 
+    def __str__(self):
+        return self.name
 
     
