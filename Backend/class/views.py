@@ -1,16 +1,20 @@
+from django.http import request
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
-from rest_framework.generics import GenericAPIView, ListCreateAPIView,RetrieveUpdateDestroyAPIView
+from rest_framework.generics import GenericAPIView, ListAPIView, ListCreateAPIView,RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import AllowAny,IsAuthenticated,IsAuthenticatedOrReadOnly
 from .permissions import *
 from .models import *
 from .serializers import *
 from rest_framework.response import Response
 from rest_framework import status
+from django.db.models import Q
+from itertools import chain
 
 
+User_Model = get_user_model()
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ClassList(ListCreateAPIView):
@@ -22,7 +26,6 @@ class ClassList(ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         my_data=request.data.copy()
         my_data['owner']=str(request.user.pk)
-        print(my_data)
         serializer = self.get_serializer(data=my_data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -33,6 +36,19 @@ class ClassObject(RetrieveUpdateDestroyAPIView):
     queryset = Class.objects.all()
     serializer_class = ClassRetriveSerializer
     permission_classes=[OBJ__IsClassOwnerORTeacherORTaOrStudentReadOnly]
+
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class MyClasses(ListAPIView):
+    def get_queryset(self):
+        user=self.request.user
+        queryset= list(chain(user.class_student.all(), user.class_ta.all(),user.class_teacher.all(),user.class_owner.all()))
+        return queryset
+    
+    serializer_class = ClassListSerializer
+
+
 
 
 
