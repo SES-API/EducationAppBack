@@ -16,7 +16,7 @@ from rest_framework import status
 class ClassList(ListCreateAPIView):
     filterset_fields = ['university', 'semester','students']
     queryset = Class.objects.all() 
-    serializer_class = ClassSerializer
+    serializer_class = ClassListSerializer
     permission_classes=[IsAuthenticatedOrReadOnly]
 
     def create(self, request, *args, **kwargs):
@@ -31,8 +31,8 @@ class ClassList(ListCreateAPIView):
 @method_decorator(csrf_exempt, name='dispatch')
 class ClassObject(RetrieveUpdateDestroyAPIView):
     queryset = Class.objects.all()
-    serializer_class = ClassSerializer
-    permission_classes=[OBJ__IsClassOwnerORTeacherORTaOrReadOnly]
+    serializer_class = ClassRetriveSerializer
+    permission_classes=[OBJ__IsClassOwnerORTeacherORTaOrStudentReadOnly]
 
 
 
@@ -50,7 +50,7 @@ class SetTeacher(GenericAPIView):
                 class_.students.remove(teacher)
                 class_.save()
             else:
-                return Response({'detail':'Forbidden'},status=status.HTTP_403_FORBIDDEN)
+                return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)
             return Response({'detail':'done'},status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -71,7 +71,7 @@ class SetTa(GenericAPIView):
                 class_.students.remove(ta)
                 class_.save()
             else:
-                return Response({'detail':'Forbidden'},status=status.HTTP_403_FORBIDDEN)
+                return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)
 
             return Response({'detail':'done'},status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
