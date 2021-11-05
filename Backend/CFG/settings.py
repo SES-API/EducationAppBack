@@ -145,7 +145,7 @@ USE_TZ = True
 
 
 # media files (uploaded by users)
-MEDIA_ROOT = BASE_DIR / "media/images"
+MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = '/images/'
 # DEFAULT_FILE_STORAGE
 
