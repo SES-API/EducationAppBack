@@ -21,8 +21,6 @@ class UserSerializer(serializers.ModelSerializer):
             'username',
             'password',
             'email',
-            # 'first_name',
-            # 'last_name'
         )
         extra_kwargs = {
             'password' : {'write_only':True},
@@ -35,8 +33,6 @@ class UserSerializer(serializers.ModelSerializer):
         user = User_Model.objects.create_user(
             username = validated_data['username'],
             email = validated_data['email'],
-            # first_name = validated_data['first_name'],
-            # last_name = validated_data['last_name'],
             password = validated_data['password']
         )
         return user
@@ -114,3 +110,19 @@ class GetUserDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = User_Model
         exclude =['password','user_permissions','groups']
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User_Model
+        fields = (
+            'id',
+            'first_name',
+            'last_name',
+            'gender',
+            'birthdate',
+            'degree',
+            'university',
+            'profile_pic',
+            'is_hidden'
+        )
