@@ -56,13 +56,13 @@ class SetTeacherSerializer(serializers.Serializer):
         class_=Class.objects.filter(id=data.get("class_id"))[0]
         teacher=User_Model.objects.filter(id=data.get("teacher_id"))[0]
         if not(class_):
-            raise serializers.ValidationError(('There is no Class whit this id'))
+            raise serializers.ValidationError(('There is no Class with this id'))
     
         if not(teacher):
-            raise serializers.ValidationError(('There is no User(Teacher) whit this id'))
+            raise serializers.ValidationError(('There is no User(Teacher) with this id'))
 
         if(teacher not in class_.students.all()):
-            raise serializers.ValidationError(('There is no User(Teacher) whit this id in class'))
+            raise serializers.ValidationError(('There is no User(Teacher) with this id in class'))
         return data
 
 
@@ -74,13 +74,13 @@ class SetTaSerializer(serializers.Serializer):
         class_=Class.objects.filter(id=data.get("class_id"))[0]
         ta=User_Model.objects.filter(id=data.get("ta_id"))[0]
         if not(class_):
-            raise serializers.ValidationError(('There is no Class whit this id'))
+            raise serializers.ValidationError(('There is no Class with this id'))
     
         if not(ta):
-            raise serializers.ValidationError(('There is no User(ta) whit this id'))
+            raise serializers.ValidationError(('There is no User(ta) with this id'))
 
         if(ta not in class_.students.all()):
-            raise serializers.ValidationError(('There is no User(ta) whit this id in class'))
+            raise serializers.ValidationError(('There is no User(ta) with this id in class'))
         return data
 
 
@@ -93,10 +93,10 @@ class JoinClassSerializer(serializers.Serializer):
         class_=Class.objects.filter(id=data.get("class_id"))[0]
         student=User_Model.objects.filter(id=data.get("student_id"))[0]
         if not(class_):
-            raise serializers.ValidationError(('There is no Class whit this id'))
+            raise serializers.ValidationError(('There is no Class with this id'))
     
         if not(student):
-            raise serializers.ValidationError(('There is no User(student) whit this id'))
+            raise serializers.ValidationError(('There is no User(student) with this id'))
 
         if(class_.password != None):
             if(data['password'] == 'Default_Password'):
@@ -114,11 +114,11 @@ class LeaveClassSerializer(serializers.Serializer):
         class_=Class.objects.filter(id=data.get("class_id"))[0]
         student=User_Model.objects.filter(id=data.get("student_id"))[0]
         if not(class_):
-            raise serializers.ValidationError(('There is no Class whit this id'))
+            raise serializers.ValidationError(('There is no Class with this id'))
     
         if not(student):
-            raise serializers.ValidationError(('There is no User(student) whit this id'))
+            raise serializers.ValidationError(('There is no User(student) with this id'))
 
         if(student not in class_.students.all()):
-            raise serializers.ValidationError(('There is no User(student) whit this id in class'))
+            raise serializers.ValidationError(('There is no User(student) with this id in class'))
         return data
