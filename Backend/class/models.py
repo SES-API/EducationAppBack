@@ -18,7 +18,7 @@ class Class(models.Model):
         ('Fall', 'Fall'),
     )
 
-    name=models.CharField(max_length=50)
+    name=models.CharField(max_length=50,unique=True)
     description=models.TextField(max_length=600,null=True)
 
     teachers=models.ManyToManyField(UserModel,related_name="class_teacher")
