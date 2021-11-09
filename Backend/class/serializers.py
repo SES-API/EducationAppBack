@@ -62,9 +62,11 @@ class SetTeacherSerializer(serializers.Serializer):
     
         if not(teacher):
             raise serializers.ValidationError(('There is no User(Teacher) with this id'))
-
+        if(teacher in class_.teachers.all()):
+            raise serializers.ValidationError(('This User Already is Teacher'))
         if(teacher not in class_.students.all() and teacher not in class_.tas.all()):
             raise serializers.ValidationError(('There is no User(Teacher) with this id in class'))
+        
         return data
 
 
@@ -80,7 +82,8 @@ class SetTaSerializer(serializers.Serializer):
     
         if not(ta):
             raise serializers.ValidationError(('There is no User(ta) with this id'))
-
+        if(ta in class_.tas.all()):
+            raise serializers.ValidationError(('This User Already is TA'))
         if(ta not in class_.students.all()):
             raise serializers.ValidationError(('There is no User(ta) with this id in class'))
         return data
