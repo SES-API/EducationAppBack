@@ -63,7 +63,10 @@ class SetTeacher(GenericAPIView):
             teacher=User_Model.objects.filter(id=serializer.validated_data['teacher_id'])[0]
             if(request.user == class_.owner or request.user in class_.teachers.all()):
                 class_.teachers.add(teacher)
-                class_.students.remove(teacher)
+                if(teacher in  class_.students.all()):
+                    class_.students.remove(teacher)
+                elif(teacher in  class_.tas.all()):
+                    class_.tas.remove(teacher)
                 class_.save()
             else:
                 return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)

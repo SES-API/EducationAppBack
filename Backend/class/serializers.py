@@ -25,12 +25,14 @@ class ClassListSerializer(serializers.ModelSerializer):
     # tas=ClassPersonSerializer(many=True)
     class Meta:
         model = Class
-        exclude = ["owner"]
+        fields="__all__"
+        # exclude = ["owner"]
         extra_kwargs = {
             'password' : {'write_only':True},
             'students' : {'read_only':True},
             'teachers' : {'read_only':True},
             'tas' : {'read_only':True},
+            'owner' : {}
         }
 
 class ClassRetriveSerializer(serializers.ModelSerializer):
@@ -61,7 +63,7 @@ class SetTeacherSerializer(serializers.Serializer):
         if not(teacher):
             raise serializers.ValidationError(('There is no User(Teacher) with this id'))
 
-        if(teacher not in class_.students.all()):
+        if(teacher not in class_.students.all() and teacher not in class_.tas.all()):
             raise serializers.ValidationError(('There is no User(Teacher) with this id in class'))
         return data
 
