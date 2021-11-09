@@ -13,10 +13,6 @@ class University(models.Model):
         return self.name
 
 class Class(models.Model):
-    SEMESTER = (
-        ('Spring', 'Spring'),
-        ('Fall', 'Fall'),
-    )
 
     name=models.CharField(max_length=50,unique=True)
     description=models.TextField(max_length=600,null=True)
@@ -29,7 +25,7 @@ class Class(models.Model):
     university=models.ForeignKey(University, on_delete=models.SET_NULL,related_name="class_university",null=True)
 
     password=models.CharField(max_length=6,null=True)
-    semester=models.CharField(choices=SEMESTER,max_length=10)
+    semester=models.CharField(max_length=30)
     image=models.ImageField(upload_to="images/class_pics",null=True)
     is_active=models.BooleanField(default=False)
 
