@@ -32,7 +32,6 @@ class ClassListSerializer(serializers.ModelSerializer):
             'students' : {'read_only':True},
             'teachers' : {'read_only':True},
             'tas' : {'read_only':True},
-            'owner' : {'read_only':True}
         }
 
 class ClassRetriveSerializer(serializers.ModelSerializer):
