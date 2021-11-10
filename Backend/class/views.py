@@ -105,8 +105,16 @@ class JoinClass(GenericAPIView):
         serializer=self.get_serializer(data=request.data)
         if serializer.is_valid():
             class_=Class.objects.filter(id=serializer.validated_data['class_id'])[0]
-            student=User_Model.objects.filter(id=request.user.pk)[0]
-            class_.students.add(student)
+            user=User_Model.objects.filter(id=request.user.pk)[0]
+            if( user in class_.teachers.all() or user in class_.tas.all() or user in class_.students.all() ):
+                response = {
+                    'status': 'forbidden',
+                    'code': status.HTTP_403_FORBIDDEN,
+                    'message': 'User already in class',
+                    'data': []
+                }
+                return Response(response)
+            class_.students.add(user)
             class_.save()
             return Response({'detail':'done'},status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -122,9 +130,18 @@ class LeaveClass(GenericAPIView):
         if serializer.is_valid():
             class_=Class.objects.filter(id=serializer.validated_data['class_id'])[0]
             user=User_Model.objects.filter(id=request.user.pk)[0]
-            class_.students.remove(user)
-            class_.teachers.remove(user)
-            class_.tas.remove(user)
-            class_.save()
+            if( user in class_.teachers.all() or user in class_.tas.all() or user in class_.students.all() ):
+                class_.students.remove(user)
+                class_.teachers.remove(user)
+                class_.tas.remove(user)
+                class_.save()
+            else:
+                response = {
+                    'status': 'forbidden',
+                    'code': status.HTTP_403_FORBIDDEN,
+                    'message': 'User is not in class',
+                    'data': []
+                }
+                return Response(response)
             return Response({'detail':'done'},status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
