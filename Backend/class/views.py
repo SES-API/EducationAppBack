@@ -114,6 +114,14 @@ class JoinClass(GenericAPIView):
                     'data': []
                 }
                 return Response(response)
+            if(user == class_.owner):
+                response = {
+                    'status': 'forbidden',
+                    'code': status.HTTP_403_FORBIDDEN,
+                    'message': 'The class owner cannot join the class',
+                    'data': []
+                }
+                return Response(response)
             class_.students.add(user)
             class_.save()
             return Response({'detail':'done'},status=status.HTTP_200_OK)
