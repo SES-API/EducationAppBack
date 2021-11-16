@@ -24,11 +24,12 @@ class ClassList(ListCreateAPIView):
     permission_classes=[IsAuthenticatedOrReadOnly]
 
     def create(self, request, *args, **kwargs):
-        my_data=request.data.copy()
-        my_data['owner']=str(request.user.pk)
-        serializer = self.get_serializer(data=my_data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        class_=serializer.save()
+        class_.teachers.add(request.user)
+        class_.owner=request.user
+        class_.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 @method_decorator(csrf_exempt, name='dispatch')
