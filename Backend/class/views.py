@@ -86,7 +86,7 @@ class SetTa(GenericAPIView):
             class_=Class.objects.filter(id=serializer.validated_data['class_id'])[0]
             ta=User_Model.objects.filter(id=serializer.validated_data['ta_id'])[0]
 
-            if(request.user == class_.owner or request.user in class_.tas.all() or request.user in class_.teachers.all()):
+            if(request.user == class_.owner or request.user == class_.headta or request.user in class_.teachers.all()):
                 class_.tas.add(ta)
                 class_.students.remove(ta)
                 class_.save()
