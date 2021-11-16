@@ -18,12 +18,11 @@ class Class(models.Model):
     description=models.TextField(max_length=600,null=True)
 
     teachers=models.ManyToManyField(UserModel,related_name="class_teacher")
+    headta=models.ForeignKey(UserModel,related_name="class_headta",on_delete=models.SET_NULL,null=True)
     tas=models.ManyToManyField(UserModel,related_name="class_ta")
     students=models.ManyToManyField(UserModel,related_name="class_student")
-
     owner=models.ForeignKey(UserModel,related_name="class_owner",on_delete=models.SET_NULL,null=True)
     university=models.ForeignKey(University, on_delete=models.SET_NULL,related_name="class_university",null=True)
-
     password=models.CharField(max_length=6,null=True)
     semester=models.CharField(max_length=30)
     image=models.ImageField(upload_to="images/class_pics",null=True)
