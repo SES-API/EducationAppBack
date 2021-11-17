@@ -12,6 +12,10 @@ urlpatterns = [
     path('set_teacher/', SetTeacher.as_view(), name='set_teacher'),
     path('set_headta/', SetHeadTa.as_view(), name='set_headta'),
     path('set_ta/', SetTa.as_view(), name='set_ta'),
+
+    path('set_headta_email/', SetHeadTaWithEmail.as_view(), name='set_headta_email'),
+    path('add_ta_email/', AddTaWithEmail.as_view(), name='add_ta_email'),
+
     path('myclasses/', MyClasses.as_view(), name='myclasses'),
     # join and leave class as an student
     path('join_class/', JoinClass.as_view(), name='join_class'),
