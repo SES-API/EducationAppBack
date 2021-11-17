@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from .models import *
 from django.shortcuts import get_object_or_404
-
+import django_filters.rest_framework
 
 
 User_Model=get_user_model()
@@ -30,6 +30,7 @@ class ClassListSerializer(serializers.ModelSerializer):
     # students=ClassPersonSerializer(many=True)
     # teachers=ClassPersonSerializer(many=True)
     # tas=ClassPersonSerializer(many=True)
+    # headta=ClassPersonSerializer(many=False)
     class Meta:
         model = Class
         fields="__all__"
@@ -39,12 +40,14 @@ class ClassListSerializer(serializers.ModelSerializer):
             'students' : {'read_only':True},
             'teachers' : {'read_only':True},
             'tas' : {'read_only':True},
+            'headta' : {'read_only':True},
         }
 
 class ClassRetriveSerializer(serializers.ModelSerializer):
     students=ClassPersonSerializer(many=True)
     teachers=ClassPersonSerializer(many=True)
     tas=ClassPersonSerializer(many=True)
+    headta=ClassPersonSerializer(many=False)
     class Meta:
         model = Class
         exclude = ["owner"]
@@ -52,6 +55,7 @@ class ClassRetriveSerializer(serializers.ModelSerializer):
             'students' : {'read_only':True},
             'teachers' : {'read_only':True},
             'tas' : {'read_only':True},
+            'headta' : {'read_only':True},
         }
 
 
