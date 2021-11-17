@@ -11,10 +11,17 @@ User_Model=get_user_model()
 
 
 class ClassPersonSerializer(serializers.ModelSerializer):
+    profile_link = serializers.SerializerMethodField('get_profile_link')
+
+    def get_profile_link(self, model):
+        request = self.context.get("request")
+        base_url = request.build_absolute_uri('/').strip("/")
+        profile_link = base_url + "/account/profile/" + f"{model.id}"
+        return profile_link
+
     class Meta:
         model = User_Model
-        # fields = "__all__"
-        fields=['id','username','first_name','last_name','email','profile_pic']
+        fields=['id','first_name','last_name','profile_pic', 'profile_link']
 
 
 
