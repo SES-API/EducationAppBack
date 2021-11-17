@@ -54,18 +54,38 @@ class SetTeacherSerializer(serializers.Serializer):
     class_id=serializers.IntegerField(required=True)
 
     def validate(self, data):
-        class_=Class.objects.filter(id=data.get("class_id"))[0]
-        teacher=User_Model.objects.filter(id=data.get("teacher_id"))[0]
+        class_=Class.objects.filter(id=data.get("class_id"))
+        teacher=User_Model.objects.filter(id=data.get("teacher_id"))
         if not(class_):
             raise serializers.ValidationError(('There is no Class with this id'))
     
         if not(teacher):
             raise serializers.ValidationError(('There is no User(Teacher) with this id'))
-        if(teacher in class_.teachers.all()):
+        if(teacher[0] in class_[0].teachers.all()):
             raise serializers.ValidationError(('This User Already is Teacher'))
-        if(teacher not in class_.students.all() and teacher not in class_.tas.all()):
+        if(teacher[0] not in class_[0].students.all() and teacher[0] not in class_[0].tas.all()):
             raise serializers.ValidationError(('There is no User(Teacher) with this id in class'))
         
+        return data
+
+
+
+class SetHeadTaSerializer(serializers.Serializer):
+    headta_id = serializers.IntegerField(required=True)
+    class_id=serializers.IntegerField(required=True)
+
+    def validate(self, data):
+        class_=Class.objects.filter(id=data.get("class_id"))
+        headta=User_Model.objects.filter(id=data.get("headta_id"))
+        if not(class_):
+            raise serializers.ValidationError(('There is no Class with this id'))
+    
+        if not(headta):
+            raise serializers.ValidationError(('There is no User(headta) with this id'))
+        if(headta[0] == class_[0].headta):
+            raise serializers.ValidationError(('This User Already is HeadTA'))
+        if(headta[0] not in class_[0].students.all() and headta[0] not in class_[0].tas.all()):
+            raise serializers.ValidationError(('There is no User(headta) with this id in class'))
         return data
 
 
@@ -74,16 +94,16 @@ class SetTaSerializer(serializers.Serializer):
     class_id=serializers.IntegerField(required=True)
 
     def validate(self, data):
-        class_=Class.objects.filter(id=data.get("class_id"))[0]
-        ta=User_Model.objects.filter(id=data.get("ta_id"))[0]
+        class_=Class.objects.filter(id=data.get("class_id"))
+        ta=User_Model.objects.filter(id=data.get("ta_id"))
         if not(class_):
             raise serializers.ValidationError(('There is no Class with this id'))
     
         if not(ta):
             raise serializers.ValidationError(('There is no User(ta) with this id'))
-        if(ta in class_.tas.all()):
+        if(ta[0] in class_[0].tas.all()):
             raise serializers.ValidationError(('This User Already is TA'))
-        if(ta not in class_.students.all()):
+        if(ta[0] not in class_[0].students.all()):
             raise serializers.ValidationError(('There is no User(ta) with this id in class'))
         return data
 
@@ -93,15 +113,15 @@ class JoinClassSerializer(serializers.Serializer):
     password = serializers.CharField(required=False, default="Default_Password")
 
     def validate(self, data):
-        class_=Class.objects.filter(id=data.get("class_id"))[0]
+        class_=Class.objects.filter(id=data.get("class_id"))
 
         if not(class_):
             raise serializers.ValidationError(('There is no Class with this id'))
 
-        if(class_.password != None):
+        if(class_[0].password != None):
             if(data['password'] == 'Default_Password'):
                 raise serializers.ValidationError(('Password is required for this class'))
-            if(class_.password != data['password']):
+            if(class_[0].password != data['password']):
                 raise serializers.ValidationError(('The class password is incorrect'))
 
         return data
@@ -111,7 +131,7 @@ class LeaveClassSerializer(serializers.Serializer):
     class_id=serializers.IntegerField(required=True)
     
     def validate(self, data):
-        class_=Class.objects.filter(id=data.get("class_id"))[0]
+        class_=Class.objects.filter(id=data.get("class_id"))
         if not(class_):
             raise serializers.ValidationError(('There is no Class with this id'))
     

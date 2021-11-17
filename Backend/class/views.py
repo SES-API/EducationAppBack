@@ -75,6 +75,30 @@ class SetTeacher(GenericAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
+class SetHeadTa(GenericAPIView):
+    serializer_class=SetHeadTaSerializer
+    permission_classes=[IsAuthenticated]
+    def post(self, request, *args, **kwargs):
+        serializer=self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            class_=Class.objects.filter(id=serializer.validated_data['class_id'])[0]
+            headta=User_Model.objects.filter(id=serializer.validated_data['headta_id'])[0]
+
+            if(request.user == class_.owner or request.user == class_.headta or request.user in class_.teachers.all()):
+                
+                class_.headta=headta
+                if(headta in  class_.students.all()):
+                    class_.students.remove(headta)
+                elif(headta in  class_.tas.all()):
+                    class_.tas.remove(headta)
+                class_.save()
+            else:
+                return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)
+
+            return Response({'detail':'done'},status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class SetTa(GenericAPIView):
