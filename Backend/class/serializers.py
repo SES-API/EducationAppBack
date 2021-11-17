@@ -48,7 +48,7 @@ class ClassRetriveSerializer(serializers.ModelSerializer):
         }
 
 
-
+#-----------------------------------------------------------------------------------
 class SetTeacherSerializer(serializers.Serializer):
     teacher_id = serializers.IntegerField(required=True)
     class_id=serializers.IntegerField(required=True)
@@ -106,6 +106,39 @@ class SetTaSerializer(serializers.Serializer):
         if(ta[0] not in class_[0].students.all()):
             raise serializers.ValidationError(('There is no User(ta) with this id in class'))
         return data
+#-----------------------------------------------------------------------------------
+class SetHeadTaWithEmailSerializer(serializers.Serializer):
+    headta_email = serializers.EmailField(required=True)
+    class_id=serializers.IntegerField(required=True)
+
+    def validate(self, data):
+        class_=Class.objects.filter(id=data.get("class_id"))
+        headta=User_Model.objects.filter(email=data.get("headta_email"))
+        if not(class_):
+            raise serializers.ValidationError(('There is no Class with this id'))
+    
+        if not(headta):
+            raise serializers.ValidationError(('There is no User(headta) with this id'))
+        if(headta[0] == class_[0].headta):
+            raise serializers.ValidationError(('This User Already is HeadTA'))
+        return data
+
+class AddTaWithEmailSerializer(serializers.Serializer):
+    ta_email = serializers.EmailField(required=True)
+    class_id=serializers.IntegerField(required=True)
+
+    def validate(self, data):
+        class_=Class.objects.filter(id=data.get("class_id"))
+        ta=User_Model.objects.filter(email=data.get("ta_email"))
+        if not(class_):
+            raise serializers.ValidationError(('There is no Class with this id'))
+    
+        if not(ta):
+            raise serializers.ValidationError(('There is no User(headta) with this id'))
+        if(ta[0] in class_[0].tas.all()):
+            raise serializers.ValidationError(('This User Already is TA'))
+        return data
+#-----------------------------------------------------------------------------------
 
 
 class JoinClassSerializer(serializers.Serializer):
