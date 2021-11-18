@@ -60,7 +60,7 @@ class ClassStudentsListForTeacherOrTa(GenericAPIView):
 class MyClasses(ListAPIView):
     def get_queryset(self):
         user=self.request.user
-        queryset= list(chain(user.class_student.all(), user.class_ta.all(),user.class_teacher.all(),user.class_owner.all()))
+        queryset= list(chain(user.class_student.all(), user.class_ta.all(),user.class_teacher.all()))
         return queryset
     
     serializer_class = ClassListSerializer
