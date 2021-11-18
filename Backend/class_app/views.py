@@ -201,7 +201,7 @@ class JoinClass(GenericAPIView):
                     'message': 'User already in class',
                     'data': []
                 }
-                return Response(response,status=status.HTTP_400_BAD_REQUEST)
+                return Response(response,status=status.HTTP_403_FORBIDDEN)
             if(user == class_.owner):
                 response = {
                     'status': 'forbidden',
@@ -209,7 +209,7 @@ class JoinClass(GenericAPIView):
                     'message': 'The class owner cannot join the class',
                     'data': []
                 }
-                return Response(response,status=status.HTTP_400_BAD_REQUEST)
+                return Response(response,status=status.HTTP_403_FORBIDDEN)
             student=ClassStudents(student=user,Class=class_,studentid=serializer.validated_data.get('student_id'))
             student.save()
             return Response({'detail':'done'},status=status.HTTP_200_OK)
@@ -238,6 +238,6 @@ class LeaveClass(GenericAPIView):
                     'message': 'User is not in class',
                     'data': []
                 }
-                return Response(response)
+                return Response(response, status=status.HTTP_403_FORBIDDEN)
             return Response({'detail':'done'},status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

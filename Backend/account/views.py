@@ -212,7 +212,7 @@ class GetProfileView(RetrieveAPIView):
                     'message': 'This profile is hidden by its user',
                     'data': []
             }
-            return Response(response)
+            return Response(response, status=status.HTTP_403_FORBIDDEN)
         return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
 
 
