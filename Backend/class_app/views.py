@@ -3,7 +3,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
-from rest_framework.generics import GenericAPIView, ListAPIView, ListCreateAPIView,RetrieveUpdateDestroyAPIView
+from rest_framework.generics import GenericAPIView, ListAPIView, ListCreateAPIView, RetrieveAPIView,RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import AllowAny,IsAuthenticated,IsAuthenticatedOrReadOnly
 from .permissions import *
 from .models import *
@@ -37,6 +37,22 @@ class ClassObject(RetrieveUpdateDestroyAPIView):
     queryset = Class.objects.all()
     serializer_class = ClassRetriveSerializer
     permission_classes=[OBJ__IsClassOwnerORTeacherORTaOrStudentReadOnly]
+
+
+class ClassStudentsListForTeacherOrTa(GenericAPIView):
+    permission_classes=[OBJ__IsClassOwnerORTeacherORTa]
+    serializer_class = ClassStudentSerializer
+    def get(self, request,pk):
+        class_=Class.objects.get(id=pk)
+        if(class_):
+            query=ClassStudents.objects.filter(Class=class_)
+            serializer=self.get_serializer(query,many=True)
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        else:
+            return Response({'detail':'there is no class with this id'},status=status.HTTP_404_NOT_FOUND)
+            
+            
+    
 
 
 

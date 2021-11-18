@@ -181,3 +181,11 @@ class LeaveClassSerializer(serializers.Serializer):
             raise serializers.ValidationError(('There is no Class with this id'))
     
         return data
+
+
+
+class ClassStudentSerializer(serializers.ModelSerializer):
+    student=ClassPersonSerializer()
+    class Meta:
+        model = ClassStudents
+        fields="__all__"
