@@ -154,6 +154,7 @@ class AddTaWithEmailSerializer(serializers.Serializer):
 
 class JoinClassSerializer(serializers.Serializer):
     class_id=serializers.IntegerField(required=True)
+    student_id=serializers.CharField(required=True)
     password = serializers.CharField(required=False, default="Default_Password")
 
     def validate(self, data):

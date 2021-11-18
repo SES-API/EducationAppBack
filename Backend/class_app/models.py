@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.db.models.base import Model
 # Create your models here.
 
 
@@ -12,6 +13,8 @@ class University(models.Model):
     def __str__(self):
         return self.name
 
+
+
 class Class(models.Model):
 
     name=models.CharField(max_length=50,unique=True)
@@ -20,7 +23,7 @@ class Class(models.Model):
     teachers=models.ManyToManyField(UserModel,related_name="class_teacher")
     headta=models.ForeignKey(UserModel,related_name="class_headta",on_delete=models.SET_NULL,null=True)
     tas=models.ManyToManyField(UserModel,related_name="class_ta")
-    students=models.ManyToManyField(UserModel,related_name="class_student")
+    students=models.ManyToManyField(UserModel,related_name="class_student",through="ClassStudents")
     owner=models.ForeignKey(UserModel,related_name="class_owner",on_delete=models.SET_NULL,null=True)
     university=models.ForeignKey(University, on_delete=models.SET_NULL,related_name="class_university",null=True)
     password=models.CharField(max_length=6,null=True)
@@ -32,3 +35,9 @@ class Class(models.Model):
         return self.name
 
     
+class ClassStudents(models.Model):
+    student = models.ForeignKey(UserModel, on_delete=models.CASCADE)
+    Class = models.ForeignKey(Class, on_delete=models.CASCADE)
+    studentid=models.CharField(unique=True,max_length=10)
+
+
