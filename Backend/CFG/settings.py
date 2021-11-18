@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_filters',
+    'django_rename_app',
     #drf:
     'rest_framework',
     #auth token
@@ -53,7 +54,9 @@ INSTALLED_APPS = [
     #account:
     'account.apps.AccountConfig',
     #class:
-    'class.apps.ClassConfig',
+    'class_app.apps.ClassAppConfig',
+    #assignment:
+    'assignment.apps.AssignmentConfig'
 ]
 
 MIDDLEWARE = [
