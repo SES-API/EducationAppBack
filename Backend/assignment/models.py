@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 # Create your models here.
 from django.apps import apps
 from class_app.models import Class
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 UserModel=get_user_model()
@@ -10,7 +11,7 @@ UserModel=get_user_model()
 
 class Question(models.Model):
     name = models.CharField(max_length=50)
-    coefficient = models.FloatField() # eg. 40%
+    weight = models.FloatField() # eg. 40%
     students = models.ManyToManyField(UserModel,related_name="question_student")
 
 class Assignment(models.Model):
@@ -23,12 +24,4 @@ class Assignment(models.Model):
 class Grade(models.Model):
     person = models.ForeignKey(Question, on_delete=models.CASCADE)
     group = models.ForeignKey(Assignment, on_delete=models.CASCADE)
-    value = models.IntegerField()
-
-
-
-
-
-
-
-
+    value = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)])
