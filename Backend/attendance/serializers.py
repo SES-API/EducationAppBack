@@ -41,7 +41,32 @@ class SessionsSerializers(serializers.ModelSerializer):
             # '' : {'':},
         }
 
+class MyAtendSerializers(serializers.ModelSerializer):
+    session_name = serializers.SerializerMethodField()
+    session_date = serializers.SerializerMethodField()
+    session_id = serializers.SerializerMethodField()
+    students=ClassPersonSerializer2()
 
+
+    class Meta:
+        model = atend
+        fields="__all__"
+        # exclude = [""]
+        extra_kwargs = {
+            # '' : {'':},
+        }
+
+    def get_session_name(self,obj):
+        session=Session.objects.filter(atends=obj)[0]
+        return session.name
+
+    def get_session_date(self,obj):
+        session=Session.objects.filter(atends=obj)[0]
+        return session.date
+
+    def get_session_id(self,obj):
+        session=Session.objects.filter(atends=obj)[0]
+        return session.pk
 
 # class SetSessionAtendsSerializers(serializers.Serializer):
 #     session_id=serializers.IntegerField()
