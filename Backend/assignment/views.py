@@ -3,7 +3,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
-from rest_framework.generics import GenericAPIView, ListAPIView, ListCreateAPIView,RetrieveUpdateDestroyAPIView
+from rest_framework.generics import GenericAPIView, ListAPIView, CreateAPIView
 from rest_framework.permissions import AllowAny,IsAuthenticated,IsAuthenticatedOrReadOnly
 from .models import Assignment, Question
 from .serializers import *
@@ -14,9 +14,9 @@ from rest_framework import status
 User_Model=get_user_model()
 
 
-
+# add an assignment
 @method_decorator(csrf_exempt, name='dispatch')
-class AssignmentList(ListCreateAPIView):
+class CreateAssignment(CreateAPIView):
     filterset_fields = ['class_fk']
     queryset = Assignment.objects.all()
     serializer_class = AssignmentSerializer
@@ -36,22 +36,41 @@ class AssignmentList(ListCreateAPIView):
 
 
 
+# list of class assignment
+@method_decorator(csrf_exempt, name='dispatch')
+class AssignmentList(ListAPIView):
+    serializer_class = AssignmentSerializer
+    permission_classes=[IsAuthenticated]
+
+    def get_queryset(self):
+        class_id = self.kwargs['pk']
+        class_ = Class.objects.filter(id=class_id)[0]
+        user = self.request.user
+        if (user in class_.teachers.all() or
+            user in class_.tas.all() or
+            user in class_.students.all() or
+            user == class_.headta):
+            return Assignment.objects.filter(class_fk=class_id)
+
+
+
+# add aquestion to an assignment
 @method_decorator(csrf_exempt, name='dispatch')
 class AddQuestion(GenericAPIView):
     serializer_class = QuestionSerializer
     permission_classes=[IsAuthenticated]
 
-    def post(self, request,*args, **kwargs):
+    def post(self, request, pk):
         serializer = self.get_serializer(data=request.data)
-        assignment=Assignment.objects.filter(id=request.data['assignment_id'])
+        assignment=Assignment.objects.filter(id=pk)
         if not assignment:
             return Response({'detail':'There is no assignment with this id'},status=status.HTTP_400_BAD_REQUEST)
         class_ = assignment[0].class_fk
-        user=User_Model.objects.filter(id=request.user.pk)[0]
+        user=request.user
         if( user in class_.teachers.all() or user in class_.tas.all() or user == class_.headta ):
             if serializer.is_valid():
-                serializer.save()
-                # assignment[0].questions.add()
+                question = serializer.save()
+                assignment[0].questions.add(question)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)
