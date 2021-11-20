@@ -19,7 +19,7 @@ class Assignment(models.Model):
     date = models.DateField(default=datetime.date.today)
     questions = models.ManyToManyField(Question,related_name="assignment_question")
     class_fk = models.ForeignKey(Class,related_name="assignment_class",on_delete=models.CASCADE)
-
+    is_graded = models.BooleanField(default=False)
     class Meta:
         unique_together = ('name', 'class_fk',)
 

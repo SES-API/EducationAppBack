@@ -9,6 +9,7 @@ from .models import Assignment, Question
 from .serializers import *
 from rest_framework.response import Response
 from rest_framework import status
+from django.core.exceptions import ValidationError
 
 
 User_Model=get_user_model()
@@ -17,7 +18,6 @@ User_Model=get_user_model()
 # add an assignment
 @method_decorator(csrf_exempt, name='dispatch')
 class CreateAssignment(CreateAPIView):
-    filterset_fields = ['class_fk']
     queryset = Assignment.objects.all()
     serializer_class = AssignmentSerializer
     permission_classes=[IsAuthenticated]
@@ -39,6 +39,7 @@ class CreateAssignment(CreateAPIView):
 # list of class assignment
 @method_decorator(csrf_exempt, name='dispatch')
 class AssignmentList(ListAPIView):
+    filterset_fields = ['is_graded']
     serializer_class = AssignmentSerializer
     permission_classes=[IsAuthenticated]
 
@@ -51,7 +52,20 @@ class AssignmentList(ListAPIView):
             user in class_.students.all() or
             user == class_.headta):
             return Assignment.objects.filter(class_fk=class_id)
+        return None
 
+    def get(self, request, pk):
+        try:
+           data=serializer_class(self.get_queryset(),many=True).data
+           return Response(data, status=status.HTTP_200_OK)
+        except Exception as error:
+            response = {
+                    'status': 'forbidden',
+                    'code': status.HTTP_403_FORBIDDEN,
+                    'message': 'You do not have permission to perform this action.',
+                    'data': []
+            }
+            return Response(response, status=status.HTTP_403_FORBIDDEN)
 
 
 # add aquestion to an assignment
