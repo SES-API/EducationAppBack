@@ -12,5 +12,9 @@ urlpatterns = [
     # pk is class id:
     path('list/<int:pk>', AssignmentList.as_view(), name='assignments'),
     # pk is assignment id:
-    path('add_question/<int:pk>', AddQuestion.as_view(), name='add_question')
+    path('add_question/<int:pk>', AddQuestion.as_view(), name='add_question'),
+    path('add_grade/', GradeQuestion.as_view(), name='add_grade'),
+    path('grades/', GradeList.as_view(), name='grades'),
+    # pk is assignment id:
+    # path('assignment_grades/<int:pk>', AssignmentGradeList.as_view(), name='assignment_grades'),
 ]

@@ -37,6 +37,7 @@ class CreateAssignment(CreateAPIView):
 
 
 
+# get/update/delete an assignment
 @method_decorator(csrf_exempt, name='dispatch')
 class AssignmentObject(RetrieveUpdateDestroyAPIView):
     queryset = Assignment.objects.all()
@@ -98,3 +99,51 @@ class AddQuestion(GenericAPIView):
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)
+
+
+
+# add one question grade for a student
+@method_decorator(csrf_exempt, name='dispatch')
+class GradeQuestion(GenericAPIView):
+    serializer_class = SetQuestionGrades
+    permission_classes=[IsAuthenticated]
+
+    def post(self,request):
+        serializer=self.get_serializer(data=request.data)
+        if(serializer.is_valid()):
+            question=serializer.validated_data["question"]
+            assignment = question.assignment_fk
+            class_ = assignment.class_fk
+            if(request.user == class_.headta or request.user in class_.teachers.all() or request.user in class_.tas.all()):
+                serializer.save() #?
+                return Response({'detail':'done'},status=status.HTTP_200_OK)  
+            else:
+                return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)  
+        
+        else:
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+
+# get grades of user
+@method_decorator(csrf_exempt, name='dispatch')
+class GradeList(ListAPIView):
+    filterset_fields = ['question']
+    serializer_class = GradeSerializer
+    permission_classes=[IsAuthenticated]
+
+    def get_queryset(self):
+        return Grade.objects.filter(student=self.request.user)
+
+
+# get grades of a assignment of user
+# class AssignmentGradeList(ListAPIView):
+#     serializer_class = AssignmentGradeSerializer
+#     permission_classes=[IsAuthenticated]
+
+#     def get_queryset(self):
+#         assignment_id = self.kwargs['pk']
+#         assignment_questions = Assignment.objects.filter(id=assignment_id)[0].assignment_question
+#         query_set = []
+#         for question in assignment_questions.all():
+#             query_set += Grade.objects.filter(question = question)
+#         return query_set
