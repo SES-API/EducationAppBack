@@ -7,6 +7,8 @@ app_name='assignment'
 
 urlpatterns = [
     path('', CreateAssignment.as_view(), name='create_assignment'),
+    # pk is class id:
     path('list/<int:pk>', AssignmentList.as_view(), name='assignments'),
+    # pk is assignment id:
     path('add_question/<int:pk>', AddQuestion.as_view(), name='add_question')
 ]

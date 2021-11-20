@@ -55,17 +55,16 @@ class AssignmentList(ListAPIView):
         return None
 
     def get(self, request, pk):
-        try:
-           data=serializer_class(self.get_queryset(),many=True).data
-           return Response(data, status=status.HTTP_200_OK)
-        except Exception as error:
-            response = {
-                    'status': 'forbidden',
-                    'code': status.HTTP_403_FORBIDDEN,
-                    'message': 'You do not have permission to perform this action.',
-                    'data': []
-            }
-            return Response(response, status=status.HTTP_403_FORBIDDEN)
+        data=AssignmentSerializer(self.get_queryset(),many=True).data
+        if(data):
+            return Response(data, status=status.HTTP_200_OK)
+        response = {
+                'status': 'forbidden',
+                'code': status.HTTP_403_FORBIDDEN,
+                'message': 'You do not have permission to perform this action.',
+                'data': []
+        }
+        return Response(response, status=status.HTTP_403_FORBIDDEN)
 
 
 # add aquestion to an assignment
