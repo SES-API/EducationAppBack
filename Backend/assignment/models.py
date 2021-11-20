@@ -26,5 +26,5 @@ class Assignment(models.Model):
 class Grade(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     student = models.ForeignKey(User, on_delete=models.CASCADE)
-    value = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)])
-    delay = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(1)]) # eg. 40%
+    value = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
+    delay = models.FloatField(default=0, validators=[MinValueValidator(0), MaxValueValidator(1)]) # eg. 40%

@@ -18,3 +18,14 @@ class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
         fields="__all__"
+
+
+class AssignmentRetrieveSerializer(serializers.ModelSerializer):
+    questions=QuestionSerializer(many=True)
+    class Meta:
+        model = Assignment
+        fields="__all__"
+        extra_kwargs = {
+            'questions' : {'read_only':True},
+            'class_fk' : {'read_only':True},
+        }

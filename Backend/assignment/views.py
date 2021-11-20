@@ -3,10 +3,11 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
-from rest_framework.generics import GenericAPIView, ListAPIView, CreateAPIView
+from rest_framework.generics import GenericAPIView, ListAPIView, CreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import AllowAny,IsAuthenticated,IsAuthenticatedOrReadOnly
 from .models import Assignment, Question
 from .serializers import *
+from .permissions import OBJ__IsClassTeacherOrTa
 from rest_framework.response import Response
 from rest_framework import status
 from django.core.exceptions import ValidationError
@@ -33,6 +34,14 @@ class CreateAssignment(CreateAPIView):
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class AssignmentObject(RetrieveUpdateDestroyAPIView):
+    queryset = Assignment.objects.all()
+    serializer_class = AssignmentRetrieveSerializer
+    permission_classes=[OBJ__IsClassTeacherOrTa]
 
 
 
@@ -83,6 +92,8 @@ class AddQuestion(GenericAPIView):
         if( user in class_.teachers.all() or user in class_.tas.all() or user == class_.headta ):
             if serializer.is_valid():
                 question = serializer.save()
+                for student in class_.students.all():
+                    question.students.add(student)
                 assignment[0].questions.add(question)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
