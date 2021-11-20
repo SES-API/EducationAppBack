@@ -15,6 +15,8 @@ from django.db.models import Q
 
 User_Model = get_user_model()
 
+
+@method_decorator(csrf_exempt, name='dispatch')
 class SessionsOfClass(GenericAPIView):
     permission_classes=[IsAuthenticated]
     serializer_class = SessionsSerializers
@@ -53,6 +55,8 @@ class SessionsOfClass(GenericAPIView):
         else:
             return Response({'detail':'there is no class with this id'},status=status.HTTP_404_NOT_FOUND)
 
+
+@method_decorator(csrf_exempt, name='dispatch')
 class SetAtendsOfSession(GenericAPIView):
     permission_classes=[IsAuthenticated]
     serializer_class = SetSessionAtendsSerializers
@@ -76,7 +80,7 @@ class SetAtendsOfSession(GenericAPIView):
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class UserAtendsForClass(GenericAPIView):
     permission_classes=[IsAuthenticated]
     serializer_class = MyAtendSerializers
