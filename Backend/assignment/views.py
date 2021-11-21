@@ -7,7 +7,7 @@ from rest_framework.generics import GenericAPIView, ListAPIView, CreateAPIView, 
 from rest_framework.permissions import AllowAny,IsAuthenticated,IsAuthenticatedOrReadOnly
 from .models import Assignment, Question
 from .serializers import *
-from .permissions import OBJ__IsClassTeacherOrTa
+from .permissions import OBJ__IsAssignmentClassTeacherOrTa, OBJ__IsQuestionClassTeacherOrTa
 from rest_framework.response import Response
 from rest_framework import status
 from django.core.exceptions import ValidationError
@@ -42,7 +42,64 @@ class CreateAssignment(CreateAPIView):
 class AssignmentObject(RetrieveUpdateDestroyAPIView):
     queryset = Assignment.objects.all()
     serializer_class = AssignmentRetrieveSerializer
-    permission_classes=[OBJ__IsClassTeacherOrTa]
+    permission_classes=[OBJ__IsAssignmentClassTeacherOrTa]
+
+
+
+# add aquestion to an assignment
+@method_decorator(csrf_exempt, name='dispatch')
+class AddQuestion(GenericAPIView):
+    serializer_class = QuestionSerializer
+    permission_classes=[IsAuthenticated]
+
+    def post(self, request, pk):
+        serializer = self.get_serializer(data=request.data)
+        assignment=Assignment.objects.filter(id=pk)
+        if not assignment:
+            return Response({'detail':'There is no assignment with this id'},status=status.HTTP_400_BAD_REQUEST)
+        class_ = assignment[0].class_fk
+        user=request.user
+        if( user in class_.teachers.all() or user in class_.tas.all() or user == class_.headta ):
+            if serializer.is_valid():
+                question = serializer.save()
+                for student in class_.students.all():
+                    question.students.add(student)
+                assignment[0].questions.add(question)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)
+
+
+
+# get/update/delete a question
+@method_decorator(csrf_exempt, name='dispatch')
+class QuestionObject(RetrieveUpdateDestroyAPIView):
+    queryset = Question.objects.all()
+    serializer_class = QuestionSerializer
+    permission_classes=[OBJ__IsQuestionClassTeacherOrTa]
+
+
+
+# add one question grade for a student
+@method_decorator(csrf_exempt, name='dispatch')
+class GradeQuestion(GenericAPIView):
+    serializer_class = SetQuestionGrades
+    permission_classes=[IsAuthenticated]
+
+    def post(self,request):
+        serializer=self.get_serializer(data=request.data)
+        if(serializer.is_valid()):
+            question=serializer.validated_data["question"]
+            assignment = question.assignment_fk
+            class_ = assignment.class_fk
+            if(request.user == class_.headta or request.user in class_.teachers.all() or request.user in class_.tas.all()):
+                serializer.save() #?
+                return Response({'detail':'done'},status=status.HTTP_200_OK)  
+            else:
+                return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)  
+        
+        else:
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -77,73 +134,27 @@ class AssignmentList(ListAPIView):
         return Response(response, status=status.HTTP_403_FORBIDDEN)
 
 
-# add aquestion to an assignment
+
+# see grades of one assignment by Role (teacher/ta - student)
 @method_decorator(csrf_exempt, name='dispatch')
-class AddQuestion(GenericAPIView):
-    serializer_class = QuestionSerializer
-    permission_classes=[IsAuthenticated]
-
-    def post(self, request, pk):
-        serializer = self.get_serializer(data=request.data)
-        assignment=Assignment.objects.filter(id=pk)
-        if not assignment:
-            return Response({'detail':'There is no assignment with this id'},status=status.HTTP_400_BAD_REQUEST)
-        class_ = assignment[0].class_fk
-        user=request.user
-        if( user in class_.teachers.all() or user in class_.tas.all() or user == class_.headta ):
-            if serializer.is_valid():
-                question = serializer.save()
-                for student in class_.students.all():
-                    question.students.add(student)
-                assignment[0].questions.add(question)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)
-
-
-
-# add one question grade for a student
-@method_decorator(csrf_exempt, name='dispatch')
-class GradeQuestion(GenericAPIView):
-    serializer_class = SetQuestionGrades
-    permission_classes=[IsAuthenticated]
-
-    def post(self,request):
-        serializer=self.get_serializer(data=request.data)
-        if(serializer.is_valid()):
-            question=serializer.validated_data["question"]
-            assignment = question.assignment_fk
-            class_ = assignment.class_fk
-            if(request.user == class_.headta or request.user in class_.teachers.all() or request.user in class_.tas.all()):
-                serializer.save() #?
-                return Response({'detail':'done'},status=status.HTTP_200_OK)  
-            else:
-                return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)  
-        
-        else:
-            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-
-
-# get grades of user
-@method_decorator(csrf_exempt, name='dispatch')
-class GradeList(ListAPIView):
-    filterset_fields = ['question']
+class AssignmentGradeList(ListAPIView):
+    filterset_fields = ['question', 'student']
     serializer_class = GradeSerializer
     permission_classes=[IsAuthenticated]
 
     def get_queryset(self):
-        return Grade.objects.filter(student=self.request.user)
+        user = self.request.user
+        assignment_id = self.kwargs['pk']
+        class_ = Assignment.objects.filter(id=assignment_id)[0].class_fk
+        questions = Question.objects.filter(assignment_fk=assignment_id)
+        query_set = Grade.objects.none()
 
+        if( user in class_.tas.all() or user in class_.teachers.all() or user == class_.headta):
+            for question in questions:
+                query_set = query_set | Grade.objects.filter(question=question)
+            return query_set
+        if( user in class_.students.all()):
+            for question in questions:
+                query_set = query_set | Grade.objects.filter(question=question , student=user)
+            return query_set
 
-# get grades of a assignment of user
-# class AssignmentGradeList(ListAPIView):
-#     serializer_class = AssignmentGradeSerializer
-#     permission_classes=[IsAuthenticated]
-
-#     def get_queryset(self):
-#         assignment_id = self.kwargs['pk']
-#         assignment_questions = Assignment.objects.filter(id=assignment_id)[0].assignment_question
-#         query_set = []
-#         for question in assignment_questions.all():
-#             query_set += Grade.objects.filter(question = question)
-#         return query_set

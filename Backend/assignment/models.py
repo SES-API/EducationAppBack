@@ -9,11 +9,9 @@ import datetime
 
 
 
-
 class Assignment(models.Model):
     name = models.CharField(max_length=50)
     date = models.DateField(default=datetime.date.today)
-    # questions = models.ManyToManyField(Question,related_name="assignment_question")
     class_fk = models.ForeignKey(Class,related_name="assignment_class",on_delete=models.CASCADE)
     is_graded = models.BooleanField(default=False)
 
@@ -24,7 +22,6 @@ class Assignment(models.Model):
 class Question(models.Model):
     name = models.CharField(max_length=50)
     weight = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(1)]) # eg. 40%
-    # students = models.ManyToManyField(User,related_name="question_student", through='Grade')
     assignment_fk = models.ForeignKey(Assignment,related_name="assignment_question",on_delete=models.CASCADE)
     is_graded = models.BooleanField(default=False)
 
