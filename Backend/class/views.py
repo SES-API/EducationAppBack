@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Q
 from itertools import chain
-
+from rest_framework import filters
 
 User_Model = get_user_model()
 
@@ -153,3 +153,10 @@ class LeaveClass(GenericAPIView):
                 return Response(response)
             return Response({'detail':'done'},status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UniversityList(ListCreateAPIView):
+    queryset=University.objects.all()
+    serializer_class=UniversityListSerializer
+    permission_classes=[IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']

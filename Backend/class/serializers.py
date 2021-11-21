@@ -116,3 +116,13 @@ class LeaveClassSerializer(serializers.Serializer):
             raise serializers.ValidationError(('There is no Class with this id'))
     
         return data
+
+
+
+
+class UniversityListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = University
+        fields="__all__"
+        # extra_kwargs = {
+        # }
