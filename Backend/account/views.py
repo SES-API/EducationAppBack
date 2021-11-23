@@ -190,8 +190,12 @@ class TokenAuthenticationView(ObtainAuthToken):
 @method_decorator(csrf_exempt, name='dispatch')
 class UpdateProfileView(UpdateAPIView):
     serializer_class = ProfileSerializer
-    permission_classes = [IsAuthenticated & IsProfileOwner]
-    queryset = User_Model.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        user_id = self.request.user.id
+        queryset = User_Model.objects.get(id=user_id)
+        return queryset
 
 
 
