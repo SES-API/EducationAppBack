@@ -191,3 +191,8 @@ class UniversityListSerializer(serializers.ModelSerializer):
         fields="__all__"
         # extra_kwargs = {
         # }
+class ClassStudentSerializer(serializers.ModelSerializer):
+    student=ClassPersonSerializer()
+    class Meta:
+        model = ClassStudents
+        fields="__all__"
