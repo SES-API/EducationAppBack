@@ -227,5 +227,9 @@ class GetProfileView(RetrieveAPIView):
 @method_decorator(csrf_exempt, name='dispatch')
 class DeleteUserView(DestroyAPIView):
     serializer_class = ProfileSerializer
-    permission_classes = [IsAuthenticated & IsProfileOwner]
-    queryset = User_Model.objects.all()
+    permission_classes = [IsAuthenticated]
+    
+    def get_object(self):
+        user_id = self.request.user.id
+        queryset = User_Model.objects.get(id=user_id)
+        return queryset

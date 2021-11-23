@@ -193,7 +193,7 @@ class JoinClass(GenericAPIView):
         serializer=self.get_serializer(data=request.data)
         if serializer.is_valid():
             class_=Class.objects.filter(id=serializer.validated_data['class_id'])[0]
-            user=User_Model.objects.filter(id=request.user.pk)[0]
+            user=request.user
             if( user in class_.teachers.all() or user in class_.tas.all() or user in class_.students.all() ):
                 response = {
                     'status': 'forbidden',
@@ -225,7 +225,7 @@ class LeaveClass(GenericAPIView):
         serializer=self.get_serializer(data=request.data)
         if serializer.is_valid():
             class_=Class.objects.filter(id=serializer.validated_data['class_id'])[0]
-            user=User_Model.objects.filter(id=request.user.pk)[0]
+            user=request.user
             if( user in class_.teachers.all() or user in class_.tas.all() or user in class_.students.all() ):
                 class_.students.remove(user)
                 class_.teachers.remove(user)
