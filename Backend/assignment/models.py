@@ -22,7 +22,7 @@ class Assignment(models.Model):
 class Question(models.Model):
     name = models.CharField(max_length=50)
     weight = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(1)]) # eg. 40%
-    assignment_fk = models.ForeignKey(Assignment,related_name="assignment_question",on_delete=models.CASCADE)
+    assignment_fk = models.ForeignKey(Assignment,related_name="assignment_question",on_delete=models.CASCADE, null=True)
     is_graded = models.BooleanField(default=False)
 
     class Meta:

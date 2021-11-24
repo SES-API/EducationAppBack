@@ -62,9 +62,10 @@ class AddQuestion(GenericAPIView):
         if( user in class_.teachers.all() or user in class_.tas.all() or user == class_.headta ):
             if serializer.is_valid():
                 question = serializer.save()
+                question.assignment_fk = assignment[0]
+                question.save()
                 for student in class_.students.all():
-                    question.students.add(student)
-                assignment[0].questions.add(question)
+                    Grade.objects.create(question=question, student=student)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)
@@ -80,7 +81,7 @@ class QuestionObject(RetrieveUpdateDestroyAPIView):
 
 
 
-# add one question grade for a student
+# add one question grade for a student -------> if (student,question) existed -> update value
 @method_decorator(csrf_exempt, name='dispatch')
 class GradeQuestion(GenericAPIView):
     serializer_class = SetQuestionGrades
@@ -93,7 +94,7 @@ class GradeQuestion(GenericAPIView):
             assignment = question.assignment_fk
             class_ = assignment.class_fk
             if(request.user == class_.headta or request.user in class_.teachers.all() or request.user in class_.tas.all()):
-                serializer.save() #?
+                serializer.save()
                 return Response({'detail':'done'},status=status.HTTP_200_OK)  
             else:
                 return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)  
@@ -107,7 +108,7 @@ class GradeQuestion(GenericAPIView):
 @method_decorator(csrf_exempt, name='dispatch')
 class AssignmentList(ListAPIView):
     filterset_fields = ['is_graded']
-    serializer_class = AssignmentSerializer
+    serializer_class = AssignmentRetrieveSerializer
     permission_classes=[IsAuthenticated]
 
     def get_queryset(self):
@@ -119,19 +120,7 @@ class AssignmentList(ListAPIView):
             user in class_.students.all() or
             user == class_.headta):
             return Assignment.objects.filter(class_fk=class_id)
-        return None
-
-    def get(self, request, pk):
-        data=AssignmentSerializer(self.get_queryset(),many=True).data
-        if(data):
-            return Response(data, status=status.HTTP_200_OK)
-        response = {
-                'status': 'forbidden',
-                'code': status.HTTP_403_FORBIDDEN,
-                'message': 'You do not have permission to perform this action.',
-                'data': []
-        }
-        return Response(response, status=status.HTTP_403_FORBIDDEN)
+        return []
 
 
 

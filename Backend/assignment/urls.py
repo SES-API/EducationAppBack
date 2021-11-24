@@ -9,10 +9,7 @@ urlpatterns = [
     # add an assignment by teacher/ta (get class_fk in body)
     path('', CreateAssignment.as_view(), name='create_assignment'),
 
-    # get /update/delete an assignment ( pk is assignment id )
-    # todo --------> if student: see grade for each question, if teacher/ta see all grades for each question
-    # todo --------> min/max/avg one question
-    # todo --------> min/max/avg one assignment
+    # get/update/delete an assignment ( pk is assignment id )
     path('<int:pk>', AssignmentObject.as_view(), name='assignment_detail'),
     
     # add aquestion to an assignment ( pk is assignment id )
@@ -22,7 +19,6 @@ urlpatterns = [
     path('question/<int:pk>', QuestionObject.as_view(), name='question_detail'),
 
     # add one question grade for a student 
-    # todo ---------> set all grades 0 at first
     path('add_grade/', GradeQuestion.as_view(), name='add_grade'),
 
     # list of class assignment ( pk is class id )
@@ -32,4 +28,8 @@ urlpatterns = [
     path('assignment_grades/<int:pk>', AssignmentGradeList.as_view(), name='question_grades'),
 ]
 
+# todo --------> in assignment view dont allow students to see grades of others
+# todo --------> in assignment view show min/max/avg one assignment
+# todo ---------> set grades of ungraded students 0
 # todo ---------> where and when should i change 'is_graded'=true ?
+# todo ---------> in add grade if (student,question) existed -> update value
