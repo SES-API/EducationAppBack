@@ -248,3 +248,11 @@ class UniversityList(ListCreateAPIView):
     permission_classes=[IsAuthenticated]
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
+
+
+class SemesterList(ListCreateAPIView):
+    queryset=Semester.objects.all()
+    serializer_class=SemesterSerializer
+    permission_classes=[IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['semester']

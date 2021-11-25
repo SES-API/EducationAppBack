@@ -7,6 +7,17 @@ from django.db.models.base import Model
 
 UserModel=get_user_model()
 
+
+class Semester(models.Model):
+    semseter=models.CharField(max_length=60)
+    def __str__(self):
+        return self.semseter
+
+
+
+
+
+
 class University(models.Model):
     name=models.CharField(max_length=50)
 
@@ -27,7 +38,8 @@ class Class(models.Model):
     owner=models.ForeignKey(UserModel,related_name="class_owner",on_delete=models.SET_NULL,null=True)
     university=models.ForeignKey(University, on_delete=models.SET_NULL,related_name="class_university",null=True)
     password=models.CharField(max_length=6,null=True)
-    semester=models.CharField(max_length=30)
+    # semester=models.CharField(max_length=30)
+    semester=models.ForeignKey(Semester,on_delete=models.SET_NULL,related_name="class_semester",null=True)
     image=models.ImageField(upload_to="images/class_pics",null=True)
     is_active=models.BooleanField(default=False)
 

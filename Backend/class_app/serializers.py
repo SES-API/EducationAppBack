@@ -9,6 +9,10 @@ import django_filters.rest_framework
 
 User_Model=get_user_model()
 
+class SemesterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Semester
+        fields="__all__"
 
 class ClassPersonSerializer(serializers.ModelSerializer):
     # profile_link = serializers.SerializerMethodField('get_profile_link')
@@ -30,6 +34,7 @@ class ClassListSerializer(serializers.ModelSerializer):
     # teachers=ClassPersonSerializer(many=True)
     # tas=ClassPersonSerializer(many=True)
     # headta=ClassPersonSerializer(many=False)
+    semseter=SemesterSerializer()
     class Meta:
         model = Class
         fields="__all__"
@@ -47,6 +52,7 @@ class ClassRetriveSerializer(serializers.ModelSerializer):
     teachers=ClassPersonSerializer(many=True)
     tas=ClassPersonSerializer(many=True)
     headta=ClassPersonSerializer(many=False)
+    semester=SemesterSerializer()
     class Meta:
         model = Class
         exclude = ["owner"]
@@ -195,3 +201,4 @@ class ClassStudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClassStudents
         fields="__all__"
+
