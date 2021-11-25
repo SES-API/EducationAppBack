@@ -46,8 +46,6 @@ class ClassListSerializer(serializers.ModelSerializer):
             'tas' : {'read_only':True},
             'headta' : {'read_only':True},
         }
-    def get_semester_name(self,obj):
-        return obj.semester.semester
 class ClassRetriveSerializer(serializers.ModelSerializer):
     students=ClassPersonSerializer(many=True)
     teachers=ClassPersonSerializer(many=True)
@@ -65,7 +63,10 @@ class ClassRetriveSerializer(serializers.ModelSerializer):
             'headta' : {'read_only':True},
         }
     def get_semester_name(self,obj):
-        return obj.semester.semester
+        if(obj.semester):
+            return obj.semester.semester
+        else:
+            return "None"
 
 
 
