@@ -45,14 +45,14 @@ class AssignmentObject(RetrieveUpdateDestroyAPIView):
     permission_classes=[OBJ__IsAssignmentClassTeacherOrTa]
 
     def get_serializer_context(self):
-        class_id = self.kwargs['pk']
-        class_ = Class.objects.filter(id=class_id)[0]
+        assignment_id = self.kwargs['pk']
+        class_ = Assignment.objects.filter(id=assignment_id)[0].class_fk
         user = self.request.user
         if (user in class_.teachers.all() or
             user in class_.tas.all() or
             user == class_.headta):
-            return {'user_id': self.request.user.id , 'is_student':False}
-        return {'user_id': self.request.user.id , 'is_student':True}
+            return {'user_id': self.request.user.id , 'is_student':False, 'class_fk':class_.id}
+        return {'user_id': self.request.user.id , 'is_student':True, 'class_fk':class_.id}
 
 
 
@@ -62,6 +62,9 @@ class AssignmentObject(RetrieveUpdateDestroyAPIView):
 class AddQuestion(GenericAPIView):
     serializer_class = QuestionSerializer
     permission_classes=[IsAuthenticated]
+
+    def get_serializer_context(self):
+        return {'assignment_fk': self.kwargs['pk']}
 
     def post(self, request, pk):
         serializer = self.get_serializer(data=request.data)
@@ -87,6 +90,11 @@ class QuestionObject(RetrieveUpdateDestroyAPIView):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
     permission_classes=[OBJ__IsQuestionClassTeacherOrTa]
+
+    def get_serializer_context(self):
+        question_id = self.kwargs['pk']
+        assignment_id = Question.objects.filter(id=question_id)[0].assignment_fk
+        return {'assignment_fk':assignment_id}
 
 
 

@@ -28,7 +28,7 @@ class GradeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Grade
         list_serializer_class = GradeListSerializer
-        fields=['value', 'delay', 'student', 'question', 'final_grade']
+        fields=['value', 'delay', 'student', 'final_grade']
 
 
 class AssignmentGradeListSerializer(serializers.ListSerializer):
@@ -59,7 +59,15 @@ class QuestionSerializer(serializers.ModelSerializer):
 
 
     def check_graded(self, question):
-        return Grade.objects.filter(question=question).count() == question.assignment_fk.class_fk.students.all().count()
+        if Grade.objects.filter(question=question).count() == question.assignment_fk.class_fk.students.all().count():
+            question.is_graded = True
+            question.save()
+            return True
+        else:
+            question.is_graded = False
+            question.save()
+            return False
+
     def calculate_min(self, question):
         return Grade.objects.filter(question=question).aggregate(Min('value'))
     def calculate_max(self, question):
@@ -67,10 +75,18 @@ class QuestionSerializer(serializers.ModelSerializer):
     def calculate_avg(self, question):
         return Grade.objects.filter(question=question).aggregate(Avg('value'))
         
+
+    def validate(self, data):
+        for question in Question.objects.filter(assignment_fk = self.context['assignment_fk']):
+            if data.get('name') == question.name:
+                raise serializers.ValidationError(("There is another question with this name in this assignment."))
+        return data
+
     class Meta:
         model = Question
-        fields=['name', 'weight','is_graded', 'avg_grade', 'min_grade', 'max_grade','question_grade']
+        fields=['id','name', 'weight','is_graded', 'avg_grade', 'min_grade', 'max_grade','question_grade']
         extra_kwargs = {
+            'assignment_fk' : {'read_only':True},
             'avg_grade' : {'read_only':True},
             'min_grade' : {'read_only':True},
             'max_grade' : {'read_only':True},
@@ -99,16 +115,32 @@ class AssignmentRetrieveSerializer(serializers.ModelSerializer):
         return context
 
     def check_graded(self, assignment):
+        if assignment.assignment_question.count() == 0:
+            return False
         for question in assignment.assignment_question.all():
             if question.is_graded == False:
+                assignment.is_graded = False
+                assignment.save()
                 return False
+        assignment.is_graded = True
+        assignment.save()
         return True
+
+    def validate(self, data):
+        for assignment in Assignment.objects.filter(class_fk = self.context['class_fk']):
+            if data.get('name') == assignment.name:
+                raise serializers.ValidationError(("There is another assignment with this name in this class."))
+        return data
 
     class Meta:
         model = Assignment
-        fields=["id", "name","date","is_graded","assignment_question", "assignment_grade", 'avg_grade', 'min_grade', 'max_grade']
+        fields=["id", "name","date","assignment_question", "assignment_grade", 'avg_grade', 'min_grade', 'max_grade',"is_graded"]
         extra_kwargs = {
             'class_fk' : {'read_only':True},
+            'avg_grade' : {'read_only':True},
+            'min_grade' : {'read_only':True},
+            'max_grade' : {'read_only':True},
+            'assignment_grade' : {'read_only':True},
         }
 
 
