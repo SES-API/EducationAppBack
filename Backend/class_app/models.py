@@ -9,9 +9,9 @@ UserModel=get_user_model()
 
 
 class Semester(models.Model):
-    semseter=models.CharField(max_length=60)
+    semester=models.CharField(max_length=60)
     def __str__(self):
-        return self.semseter
+        return self.semester
 
 
 

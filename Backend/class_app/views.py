@@ -18,7 +18,7 @@ User_Model = get_user_model()
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ClassList(ListCreateAPIView):
-    filterset_fields = ['university', 'semester','students']
+    filterset_fields = ['university', 'semester__semester','students']
     queryset = Class.objects.all() 
     serializer_class = ClassListSerializer
     permission_classes=[IsAuthenticatedOrReadOnly]

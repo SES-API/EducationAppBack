@@ -34,7 +34,7 @@ class ClassListSerializer(serializers.ModelSerializer):
     # teachers=ClassPersonSerializer(many=True)
     # tas=ClassPersonSerializer(many=True)
     # headta=ClassPersonSerializer(many=False)
-    semseter=SemesterSerializer()
+    # semseter=SemesterSerializer(many=False)
     class Meta:
         model = Class
         fields="__all__"
