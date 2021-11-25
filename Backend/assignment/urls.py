@@ -23,13 +23,8 @@ urlpatterns = [
 
     # list of class assignment ( pk is class id )
     path('class/<int:pk>', AssignmentList.as_view(), name='assignments'),
-
-    # see grades of one assignment by Role (teacher/ta - student)
-    path('assignment_grades/<int:pk>', AssignmentGradeList.as_view(), name='question_grades'),
 ]
 
 # todo --------> in assignment view dont allow students to see grades of others
+# todo --------> in assignment view calculate assignment grades
 # todo --------> in assignment view show min/max/avg one assignment
-# todo ---------> set grades of ungraded students 0
-# todo ---------> where and when should i change 'is_graded'=true ?
-# todo ---------> in add grade if (student,question) existed -> update value
