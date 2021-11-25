@@ -24,5 +24,3 @@ urlpatterns = [
     # list of class assignment ( pk is class id )
     path('class/<int:pk>', AssignmentList.as_view(), name='assignments'),
 ]
-
-# todo --------> in assignment view dont allow students to see grades of others

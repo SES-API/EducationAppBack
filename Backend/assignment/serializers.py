@@ -16,33 +16,46 @@ class CreateAssignmentSerializer(serializers.ModelSerializer):
             'assignment_question' : {'read_only':True},
         }
 
+class GradeListSerializer(serializers.ListSerializer):
+    def to_representation(self, data):
+        if self.context.get("is_student") == True:
+            user_id = self.context.get("user_id")
+            data = data.filter(student=user_id)
+        return super(GradeListSerializer, self).to_representation(data)
+
 
 class GradeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Grade
+        list_serializer_class = GradeListSerializer
         fields=['value', 'delay', 'student', 'question', 'final_grade']
+
+
+class AssignmentGradeListSerializer(serializers.ListSerializer):
+    def to_representation(self, data):
+        if self.context.get("is_student") == True:
+            user_id = self.context.get("user_id")
+            data = data.filter(student=user_id)
+        return super(AssignmentGradeListSerializer, self).to_representation(data)
 
 
 class AssignmentGradeSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssignmentGrade
+        list_serializer_class = AssignmentGradeListSerializer
         fields=['value', 'student', 'assignment']
 
 
 class QuestionSerializer(serializers.ModelSerializer):
-    question_grade=GradeSerializer(many=True, required=False) #Role: teacher/ta vs student
+    question_grade=GradeSerializer(many=True, required=False)
     is_graded = serializers.SerializerMethodField('check_graded')
     min_grade = serializers.SerializerMethodField('calculate_min')
     max_grade = serializers.SerializerMethodField('calculate_max')
     avg_grade = serializers.SerializerMethodField('calculate_avg')
 
-    # question_grade = serializers.SerializerMethodField('check_role')
-    # def check_role(self, obj):
-    #     if self.context.get("is_student") == False:
-    #         return GradeSerializer(many=True).data #?
-    #     else:
-    #         user_id = self.context.get("user_id")
-    #         return Grade.objects.filter(student=user_id) #?
+    def get_serializer_context(self):
+        context={'user_id' : self.context.get("user_id"), 'is_student' : self.context.get("is_student")}
+        return context
 
 
     def check_graded(self, question):
