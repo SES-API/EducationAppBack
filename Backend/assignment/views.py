@@ -103,15 +103,28 @@ class GradeQuestion(GenericAPIView):
             assignment = question.assignment_fk
             class_ = assignment.class_fk
             if(request.user == class_.headta or request.user in class_.teachers.all() or request.user in class_.tas.all()):
-                grade = Grade.objects.get(question = question, student=serializer.validated_data["student"])
+                student = serializer.validated_data["student"]
+
+                grade = Grade.objects.filter(question = question, student=student)
                 if(grade):
+                    grade = grade[0]
                     grade.value = serializer.validated_data["value"]
                     grade.delay = serializer.validated_data["delay"]
                     grade.save()
                 else:
                     grade = serializer.save()
-                grade.final_grade = grade.value * (1-grade.delay)
+                grade.final_grade = round((grade.value*(1-grade.delay)), 2)
                 grade.save()
+
+                assignment_grade = AssignmentGrade.objects.filter(assignment=assignment, student=student)
+                val = round((grade.final_grade * question.weight),2)
+                if(assignment_grade):
+                    assignment_grade= assignment_grade[0]
+                    assignment_grade.value += val
+                    assignment_grade.save()
+                else:
+                    AssignmentGrade.objects.create(assignment=assignment, student=student, value=val)
+
                 return Response({'detail':'done'},status=status.HTTP_200_OK)  
             else:
                 return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)  

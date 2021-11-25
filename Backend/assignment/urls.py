@@ -26,5 +26,3 @@ urlpatterns = [
 ]
 
 # todo --------> in assignment view dont allow students to see grades of others
-# todo --------> in assignment view calculate assignment grades
-# todo --------> in assignment view show min/max/avg one assignment

@@ -23,6 +23,12 @@ class GradeSerializer(serializers.ModelSerializer):
         fields=['value', 'delay', 'student', 'question', 'final_grade']
 
 
+class AssignmentGradeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AssignmentGrade
+        fields=['value', 'student', 'assignment']
+
+
 class QuestionSerializer(serializers.ModelSerializer):
     question_grade=GradeSerializer(many=True, required=False) #Role: teacher/ta vs student
     is_graded = serializers.SerializerMethodField('check_graded')
@@ -62,7 +68,18 @@ class QuestionSerializer(serializers.ModelSerializer):
 
 class AssignmentRetrieveSerializer(serializers.ModelSerializer):
     assignment_question=QuestionSerializer(many=True)
+    assignment_grade=AssignmentGradeSerializer(many=True)
     is_graded = serializers.SerializerMethodField('check_graded')
+    min_grade = serializers.SerializerMethodField('calculate_min')
+    max_grade = serializers.SerializerMethodField('calculate_max')
+    avg_grade = serializers.SerializerMethodField('calculate_avg')
+
+    def calculate_min(self, assignment):
+        return AssignmentGrade.objects.filter(assignment=assignment).aggregate(Min('value'))
+    def calculate_max(self, assignment):
+        return AssignmentGrade.objects.filter(assignment=assignment).aggregate(Max('value'))
+    def calculate_avg(self, assignment):
+        return AssignmentGrade.objects.filter(assignment=assignment).aggregate(Avg('value'))
 
     def get_serializer_context(self):
         context={'user_id' : self.context.get("user_id"), 'is_student' : self.context.get("is_student")}
@@ -76,7 +93,7 @@ class AssignmentRetrieveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Assignment
-        fields=["id", "name","date","is_graded","assignment_question"]
+        fields=["id", "name","date","is_graded","assignment_question", "assignment_grade", 'avg_grade', 'min_grade', 'max_grade']
         extra_kwargs = {
             'class_fk' : {'read_only':True},
         }
