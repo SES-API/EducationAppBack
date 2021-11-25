@@ -116,22 +116,30 @@ class GradeQuestion(GenericAPIView):
                 grade = Grade.objects.filter(question = question, student=student)
                 if(grade):
                     grade = grade[0]
+                    assignment_grade = AssignmentGrade.objects.filter(assignment=assignment, student=student)
+                    val = round((grade.final_grade * question.weight),2)
+                    assignment_grade= assignment_grade[0]
+                    assignment_grade.value -= val
                     grade.value = serializer.validated_data["value"]
                     grade.delay = serializer.validated_data["delay"]
+                    grade.final_grade = round((grade.value*(1-grade.delay)), 2)
                     grade.save()
-                else:
-                    grade = serializer.save()
-                grade.final_grade = round((grade.value*(1-grade.delay)), 2)
-                grade.save()
-
-                assignment_grade = AssignmentGrade.objects.filter(assignment=assignment, student=student)
-                val = round((grade.final_grade * question.weight),2)
-                if(assignment_grade):
-                    assignment_grade= assignment_grade[0]
+                    val = round((grade.final_grade * question.weight),2)
                     assignment_grade.value += val
                     assignment_grade.save()
                 else:
-                    AssignmentGrade.objects.create(assignment=assignment, student=student, value=val)
+                    grade = serializer.save()
+                    grade.final_grade = round((grade.value*(1-grade.delay)), 2)
+                    grade.save()
+
+                    assignment_grade = AssignmentGrade.objects.filter(assignment=assignment, student=student)
+                    val = round((grade.final_grade * question.weight),2)
+                    if(assignment_grade):
+                        assignment_grade= assignment_grade[0]
+                        assignment_grade.value += val
+                        assignment_grade.save()
+                    else:
+                        AssignmentGrade.objects.create(assignment=assignment, student=student, value=val)
 
                 return Response({'detail':'done'},status=status.HTTP_200_OK)  
             else:

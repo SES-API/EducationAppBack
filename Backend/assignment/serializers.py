@@ -69,11 +69,11 @@ class QuestionSerializer(serializers.ModelSerializer):
             return False
 
     def calculate_min(self, question):
-        return Grade.objects.filter(question=question).aggregate(Min('value'))
+        return Grade.objects.filter(question=question).aggregate(Min('final_grade'))
     def calculate_max(self, question):
-        return Grade.objects.filter(question=question).aggregate(Max('value'))
+        return Grade.objects.filter(question=question).aggregate(Max('final_grade'))
     def calculate_avg(self, question):
-        return Grade.objects.filter(question=question).aggregate(Avg('value'))
+        return Grade.objects.filter(question=question).aggregate(Avg('final_grade'))
         
 
     def validate(self, data):
