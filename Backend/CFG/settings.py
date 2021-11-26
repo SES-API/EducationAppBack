@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_filters',
+    # 'django_filters',
     #drf:
     'rest_framework',
     #auth token
@@ -53,7 +53,9 @@ INSTALLED_APPS = [
     #account:
     'account.apps.AccountConfig',
     #class:
-    'class.apps.ClassConfig',
+    'class_app.apps.ClassAppConfig',
+    #assignment:
+    'assignment.apps.AssignmentConfig'
 ]
 
 MIDDLEWARE = [
@@ -121,6 +123,7 @@ AUTH_PASSWORD_VALIDATORS = [
 REST_FRAMEWORK = {
    'DEFAULT_AUTHENTICATION_CLASSES': (
        'rest_framework.authentication.TokenAuthentication',
+       'rest_framework.authentication.BasicAuthentication',
     #    'rest_framework.authentication.SessionAuthentication',
    ),
    'DEFAULT_PERMISSION_CLASSES': (

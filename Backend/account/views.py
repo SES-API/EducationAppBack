@@ -190,8 +190,12 @@ class TokenAuthenticationView(ObtainAuthToken):
 @method_decorator(csrf_exempt, name='dispatch')
 class UpdateProfileView(UpdateAPIView):
     serializer_class = ProfileSerializer
-    permission_classes = [IsAuthenticated & IsProfileOwner]
-    queryset = User_Model.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        user_id = self.request.user.id
+        queryset = User_Model.objects.get(id=user_id)
+        return queryset
 
 
 
@@ -212,7 +216,7 @@ class GetProfileView(RetrieveAPIView):
                     'message': 'This profile is hidden by its user',
                     'data': []
             }
-            return Response(response)
+            return Response(response, status=status.HTTP_403_FORBIDDEN)
         return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
 
 
@@ -223,5 +227,9 @@ class GetProfileView(RetrieveAPIView):
 @method_decorator(csrf_exempt, name='dispatch')
 class DeleteUserView(DestroyAPIView):
     serializer_class = ProfileSerializer
-    permission_classes = [IsAuthenticated & IsProfileOwner]
-    queryset = User_Model.objects.all()
+    permission_classes = [IsAuthenticated]
+    
+    def get_object(self):
+        user_id = self.request.user.id
+        queryset = User_Model.objects.get(id=user_id)
+        return queryset
