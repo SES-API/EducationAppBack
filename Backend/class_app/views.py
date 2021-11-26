@@ -3,7 +3,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
-from rest_framework.generics import GenericAPIView, ListAPIView, ListCreateAPIView,RetrieveUpdateDestroyAPIView
+from rest_framework.generics import GenericAPIView, ListAPIView, ListCreateAPIView, RetrieveAPIView,RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import AllowAny,IsAuthenticated,IsAuthenticatedOrReadOnly
 from .permissions import *
 from .models import *
@@ -12,13 +12,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Q
 from itertools import chain
-
+from rest_framework import filters
 
 User_Model = get_user_model()
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ClassList(ListCreateAPIView):
-    filterset_fields = ['university', 'semester','students']
+    filterset_fields = ['university', 'semester__semester','students']
     queryset = Class.objects.all() 
     serializer_class = ClassListSerializer
     permission_classes=[IsAuthenticatedOrReadOnly]
@@ -39,12 +39,28 @@ class ClassObject(RetrieveUpdateDestroyAPIView):
     permission_classes=[OBJ__IsClassOwnerORTeacherORTaOrStudentReadOnly]
 
 
+class ClassStudentsListForTeacherOrTa(GenericAPIView):
+    permission_classes=[OBJ__IsClassOwnerORTeacherORTa]
+    serializer_class = ClassStudentSerializer
+    def get(self, request,pk):
+        class_=Class.objects.get(id=pk)
+        if(class_):
+            query=ClassStudents.objects.filter(Class=class_)
+            serializer=self.get_serializer(query,many=True)
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        else:
+            return Response({'detail':'there is no class with this id'},status=status.HTTP_404_NOT_FOUND)
+            
+            
+    
+
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MyClasses(ListAPIView):
     def get_queryset(self):
         user=self.request.user
-        queryset= list(chain(user.class_student.all(), user.class_ta.all(),user.class_teacher.all(),user.class_owner.all()))
+        queryset= list(chain(user.class_student.all(), user.class_ta.all(),user.class_teacher.all()))
         return queryset
     
     serializer_class = ClassListSerializer
@@ -177,7 +193,7 @@ class JoinClass(GenericAPIView):
         serializer=self.get_serializer(data=request.data)
         if serializer.is_valid():
             class_=Class.objects.filter(id=serializer.validated_data['class_id'])[0]
-            user=User_Model.objects.filter(id=request.user.pk)[0]
+            user=request.user
             if( user in class_.teachers.all() or user in class_.tas.all() or user in class_.students.all() ):
                 response = {
                     'status': 'forbidden',
@@ -209,7 +225,7 @@ class LeaveClass(GenericAPIView):
         serializer=self.get_serializer(data=request.data)
         if serializer.is_valid():
             class_=Class.objects.filter(id=serializer.validated_data['class_id'])[0]
-            user=User_Model.objects.filter(id=request.user.pk)[0]
+            user=request.user
             if( user in class_.teachers.all() or user in class_.tas.all() or user in class_.students.all() ):
                 class_.students.remove(user)
                 class_.teachers.remove(user)
@@ -225,3 +241,18 @@ class LeaveClass(GenericAPIView):
                 return Response(response, status=status.HTTP_403_FORBIDDEN)
             return Response({'detail':'done'},status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UniversityList(ListCreateAPIView):
+    queryset=University.objects.all()
+    serializer_class=UniversityListSerializer
+    permission_classes=[IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
+
+
+class SemesterList(ListCreateAPIView):
+    queryset=Semester.objects.all()
+    serializer_class=SemesterSerializer
+    permission_classes=[IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['semester']
