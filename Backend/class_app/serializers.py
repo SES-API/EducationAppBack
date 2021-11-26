@@ -9,20 +9,23 @@ import django_filters.rest_framework
 
 User_Model=get_user_model()
 
+class SemesterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Semester
+        fields="__all__"
 
 class ClassPersonSerializer(serializers.ModelSerializer):
-    profile_link = serializers.SerializerMethodField('get_profile_link')
+    # profile_link = serializers.SerializerMethodField('get_profile_link')
 
-    def get_profile_link(self, model):
-        request = self.context.get("request")
-        base_url = request.build_absolute_uri('/').strip("/")
-        profile_link = base_url + "/account/profile/" + f"{model.id}"
-        return profile_link
+    # def get_profile_link(self, model):
+    #     request = self.context.get("request")
+    #     base_url = request.build_absolute_uri('/').strip("/")
+    #     profile_link = base_url + "/account/profile/" + f"{model.id}"
+    #     return profile_link
 
     class Meta:
         model = User_Model
-        fields=['id','first_name','last_name','profile_pic', 'profile_link']
-
+        fields=['id','username','first_name','last_name','email','gender','profile_pic','birthdate','degree','university']
 
 
 
@@ -31,6 +34,7 @@ class ClassListSerializer(serializers.ModelSerializer):
     # teachers=ClassPersonSerializer(many=True)
     # tas=ClassPersonSerializer(many=True)
     # headta=ClassPersonSerializer(many=False)
+    # semseter=SemesterSerializer(many=False)
     class Meta:
         model = Class
         fields="__all__"
@@ -42,12 +46,13 @@ class ClassListSerializer(serializers.ModelSerializer):
             'tas' : {'read_only':True},
             'headta' : {'read_only':True},
         }
-
 class ClassRetriveSerializer(serializers.ModelSerializer):
     students=ClassPersonSerializer(many=True)
     teachers=ClassPersonSerializer(many=True)
     tas=ClassPersonSerializer(many=True)
     headta=ClassPersonSerializer(many=False)
+    # semester=SemesterSerializer()
+    semester_name=serializers.SerializerMethodField()
     class Meta:
         model = Class
         exclude = ["owner"]
@@ -57,6 +62,12 @@ class ClassRetriveSerializer(serializers.ModelSerializer):
             'tas' : {'read_only':True},
             'headta' : {'read_only':True},
         }
+    def get_semester_name(self,obj):
+        if(obj.semester):
+            return obj.semester.semester
+        else:
+            return "None"
+
 
 
 #-----------------------------------------------------------------------------------
@@ -184,8 +195,16 @@ class LeaveClassSerializer(serializers.Serializer):
 
 
 
+
+class UniversityListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = University
+        fields="__all__"
+        # extra_kwargs = {
+        # }
 class ClassStudentSerializer(serializers.ModelSerializer):
     student=ClassPersonSerializer()
     class Meta:
         model = ClassStudents
         fields="__all__"
+

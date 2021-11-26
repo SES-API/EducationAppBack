@@ -20,6 +20,13 @@ urlpatterns = [
     # join and leave class as an student
     path('join_class/', JoinClass.as_view(), name='join_class'),
     path('leave_class/', LeaveClass.as_view(), name='leave_class'),
-
+    #university list and create with srach base on name
+    path('university/', UniversityList.as_view(), name='university'),
+    #semester list and create with srach base on semester
+    path('semester/', SemesterList.as_view(), name='semester'),
+    
+    
+    
+    
     path('students_id_list/<int:pk>', ClassStudentsListForTeacherOrTa.as_view(), name='class_object_with_student_id'),
 ]
