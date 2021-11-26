@@ -18,7 +18,7 @@ User_Model = get_user_model()
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ClassList(ListCreateAPIView):
-    filterset_fields = ['university', 'semester__semester','students']
+    filterset_fields = ['university', 'semester__semester','students', 'name', 'is_active']
     queryset = Class.objects.all() 
     serializer_class = ClassListSerializer
     permission_classes=[IsAuthenticatedOrReadOnly]
@@ -58,9 +58,11 @@ class ClassStudentsListForTeacherOrTa(GenericAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MyClasses(ListAPIView):
+    filterset_fields = ['name', 'is_active','university', 'semester__semester']
+
     def get_queryset(self):
         user=self.request.user
-        queryset= list(chain(user.class_student.all(), user.class_ta.all(),user.class_teacher.all()))
+        queryset= user.class_student.all() | (user.class_ta.all()) | (user.class_teacher.all())
         return queryset
     
     serializer_class = ClassListSerializer

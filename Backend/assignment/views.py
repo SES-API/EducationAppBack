@@ -153,7 +153,7 @@ class GradeQuestion(GenericAPIView):
 # list of class assignment
 @method_decorator(csrf_exempt, name='dispatch')
 class AssignmentList(ListAPIView):
-    filterset_fields = ['is_graded']
+    filterset_fields = ['is_graded', 'date']
     serializer_class = AssignmentRetrieveSerializer
     permission_classes=[IsAuthenticated]
 

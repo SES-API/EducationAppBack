@@ -18,6 +18,7 @@ User_Model = get_user_model()
 
 @method_decorator(csrf_exempt, name='dispatch')
 class SessionsOfClass(GenericAPIView):
+    filterset_fields = ['name','date','atends']
     permission_classes=[IsAuthenticated]
     serializer_class = SessionsSerializers
     def get(self, request,pk):
@@ -25,7 +26,7 @@ class SessionsOfClass(GenericAPIView):
         if(class_):
             class_=class_[0]
             if(request.user == class_.headta or request.user in class_.teachers.all() or request.user in class_.tas.all()):
-                query=Session.objects.filter(session_class=class_)
+                query=self.filter_queryset(Session.objects.filter(session_class=class_))
                 serializer=self.get_serializer(query,many=True)
                 return Response(serializer.data,status=status.HTTP_200_OK)
             else:
@@ -82,6 +83,7 @@ class SetAtendsOfSession(GenericAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UserAtendsForClass(GenericAPIView):
+    filterset_fields = ['Present']
     permission_classes=[IsAuthenticated]
     serializer_class = MyAtendSerializers
     def get(self, request,pk):
@@ -89,7 +91,7 @@ class UserAtendsForClass(GenericAPIView):
         if(class_):
             class_=class_[0]
             if(request.user in class_.students.all()):
-                query=atend.objects.filter(user_session__session_class=class_,students=request.user)
+                query=self.filter_queryset(atend.objects.filter(user_session__session_class=class_,students=request.user))
                 serializer=self.get_serializer(query,many=True)
                 return Response(serializer.data,status=status.HTTP_200_OK)
             else:
