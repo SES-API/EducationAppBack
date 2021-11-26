@@ -58,6 +58,10 @@ urlpatterns = [
     path('account/',include('account.urls')),
     #class app urls:
     path('class/',include('class_app.urls')),
+
+    #attendance app urls:
+    path('attendance/',include('attendance.urls')),
+  
     # assignment app urls:
     path('assignment/',include('assignment.urls')),
 

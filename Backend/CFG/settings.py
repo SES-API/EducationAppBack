@@ -55,7 +55,9 @@ INSTALLED_APPS = [
     #class:
     'class_app.apps.ClassAppConfig',
     #assignment:
-    'assignment.apps.AssignmentConfig'
+    'assignment.apps.AssignmentConfig',
+    #attendance
+    'attendance.apps.AttendanceConfig',
 ]
 
 MIDDLEWARE = [
