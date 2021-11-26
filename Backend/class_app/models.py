@@ -50,6 +50,10 @@ class Class(models.Model):
 class ClassStudents(models.Model):
     student = models.ForeignKey(UserModel, on_delete=models.CASCADE)
     Class = models.ForeignKey(Class, on_delete=models.CASCADE)
-    studentid=models.CharField(unique=True,max_length=10)
+    studentid=models.CharField(max_length=10)
+
+
+    class Meta:
+        unique_together = ('studentid', 'Class',)
 
 
