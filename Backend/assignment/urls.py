@@ -18,7 +18,7 @@ urlpatterns = [
     # get/update/delete a question ( pk is question id )
     path('question/<int:pk>', QuestionObject.as_view(), name='question_detail'),
 
-    # add one question grade for a student 
+    # add question grades for students
     path('add_grade/', GradeQuestion.as_view(), name='add_grade'),
 
     # list of class assignment ( pk is class id )

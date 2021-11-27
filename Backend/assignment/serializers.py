@@ -161,4 +161,46 @@ class SetQuestionGrades(serializers.ModelSerializer):
         student = data['student']
         if(student not in all_class_students):
             raise serializers.ValidationError(('There is no student with this id for this question'))
+        
+        
+        question=data["question"]
+        assignment = question.assignment_fk
+        class_ = assignment.class_fk
+        if(self.context['user'] == class_.headta or self.context['user'] in class_.teachers.all() or self.context['user'] in class_.tas.all()):
+            student = data["student"]
+
+            grade = Grade.objects.filter(question = question, student=student)
+            if(grade):
+                grade = grade[0]
+                assignment_grade = AssignmentGrade.objects.filter(assignment=assignment, student=student)
+                val = round((grade.final_grade * question.weight),2)
+                assignment_grade= assignment_grade[0]
+                assignment_grade.value -= val
+                grade.value = data["value"]
+                grade.delay = data["delay"]
+                grade.final_grade = round((grade.value*(1-grade.delay)), 2)
+                grade.save()
+                val = round((grade.final_grade * question.weight),2)
+                assignment_grade.value += val
+                assignment_grade.save()
+            else:
+                grade = Grade.objects.create(student=student, question=question, value=data['value'], delay=data['delay'])
+                grade.final_grade = round((grade.value*(1-grade.delay)), 2)
+                grade.save()
+
+                assignment_grade = AssignmentGrade.objects.filter(assignment=assignment, student=student)
+                val = round((grade.final_grade * question.weight),2)
+                print(val)
+                if(assignment_grade):
+                    assignment_grade= assignment_grade[0]
+                    assignment_grade.value += val
+                    assignment_grade.save()
+                else:
+                    AssignmentGrade.objects.create(assignment=assignment, student=student, value=val)
+
+            return data
+        else:
+            raise serializers.ValidationError(('You do not have permission to perform this action.'))
+
+        
         return data

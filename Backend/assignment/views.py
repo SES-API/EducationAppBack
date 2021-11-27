@@ -98,53 +98,19 @@ class QuestionObject(RetrieveUpdateDestroyAPIView):
 
 
 
-# add one question grade for a student
+# add question grades for a students
 @method_decorator(csrf_exempt, name='dispatch')
 class GradeQuestion(GenericAPIView):
     serializer_class = SetQuestionGrades
     permission_classes=[IsAuthenticated]
 
+    def get_serializer_context(self):
+        return {'user':self.request.user}
+
     def post(self,request):
-        serializer=self.get_serializer(data=request.data)
+        serializer=self.get_serializer(data=request.data, many=True)
         if(serializer.is_valid()):
-            question=serializer.validated_data["question"]
-            assignment = question.assignment_fk
-            class_ = assignment.class_fk
-            if(request.user == class_.headta or request.user in class_.teachers.all() or request.user in class_.tas.all()):
-                student = serializer.validated_data["student"]
-
-                grade = Grade.objects.filter(question = question, student=student)
-                if(grade):
-                    grade = grade[0]
-                    assignment_grade = AssignmentGrade.objects.filter(assignment=assignment, student=student)
-                    val = round((grade.final_grade * question.weight),2)
-                    assignment_grade= assignment_grade[0]
-                    assignment_grade.value -= val
-                    grade.value = serializer.validated_data["value"]
-                    grade.delay = serializer.validated_data["delay"]
-                    grade.final_grade = round((grade.value*(1-grade.delay)), 2)
-                    grade.save()
-                    val = round((grade.final_grade * question.weight),2)
-                    assignment_grade.value += val
-                    assignment_grade.save()
-                else:
-                    grade = serializer.save()
-                    grade.final_grade = round((grade.value*(1-grade.delay)), 2)
-                    grade.save()
-
-                    assignment_grade = AssignmentGrade.objects.filter(assignment=assignment, student=student)
-                    val = round((grade.final_grade * question.weight),2)
-                    if(assignment_grade):
-                        assignment_grade= assignment_grade[0]
-                        assignment_grade.value += val
-                        assignment_grade.save()
-                    else:
-                        AssignmentGrade.objects.create(assignment=assignment, student=student, value=val)
-
-                return Response({'detail':'done'},status=status.HTTP_200_OK)  
-            else:
-                return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)  
-        
+            return Response({'detail':'done'},status=status.HTTP_200_OK)          
         else:
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
