@@ -40,12 +40,13 @@ class ClassObject(RetrieveUpdateDestroyAPIView):
 
 
 class ClassStudentsListForTeacherOrTa(GenericAPIView):
+    filterset_fields = ['studentid','student']
     permission_classes=[OBJ__IsClassOwnerORTeacherORTa]
     serializer_class = ClassStudentSerializer
     def get(self, request,pk):
         class_=Class.objects.get(id=pk)
         if(class_):
-            query=ClassStudents.objects.filter(Class=class_)
+            query=self.filter_queryset(ClassStudents.objects.filter(Class=class_))
             serializer=self.get_serializer(query,many=True)
             return Response(serializer.data,status=status.HTTP_200_OK)
         else:
