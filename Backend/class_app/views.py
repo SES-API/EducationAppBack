@@ -131,11 +131,11 @@ class SetTa(GenericAPIView):
             class_=Class.objects.filter(id=serializer.validated_data['class_id'])[0]
             ta=User_Model.objects.filter(id=serializer.validated_data['ta_id'])[0]
 
-            if(request.user == class_.owner or request.user == class_.headta or request.user in class_.teachers.all()):
+            if((request.user == class_.owner or request.user == class_.headta or request.user in class_.teachers.all()) and class_.headta != ta):
                 class_.tas.add(ta)
                 class_.students.remove(ta)
                 class_.save()
-            elif(request.user==class_.teacher and class_.headta==ta):
+            elif(request.user in class_.teachers.all() and class_.headta==ta):
                 class_.tas.add(ta)
                 class_.headta=None
                 class_.save()
