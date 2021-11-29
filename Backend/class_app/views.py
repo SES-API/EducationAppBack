@@ -87,6 +87,8 @@ class SetTeacher(GenericAPIView):
                     class_.students.remove(teacher)
                 elif(teacher in  class_.tas.all()):
                     class_.tas.remove(teacher)
+                elif(teacher ==  class_.headta):
+                    class_.headta=None
                 class_.save()
             else:
                 return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)
@@ -132,6 +134,10 @@ class SetTa(GenericAPIView):
             if(request.user == class_.owner or request.user == class_.headta or request.user in class_.teachers.all()):
                 class_.tas.add(ta)
                 class_.students.remove(ta)
+                class_.save()
+            elif(request.user==class_.teacher and class_.headta==ta):
+                class_.tas.add(ta)
+                class_.headta=None
                 class_.save()
             else:
                 return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)
