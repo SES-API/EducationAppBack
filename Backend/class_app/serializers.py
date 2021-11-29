@@ -170,9 +170,15 @@ class JoinClassSerializer(serializers.Serializer):
 
     def validate(self, data):
         class_=Class.objects.filter(id=data.get("class_id"))
-
         if not(class_):
             raise serializers.ValidationError(('There is no Class with this id'))
+        items=ClassStudents.objects.filter(studentid=data["student_id"])
+        if (items):
+            for std in items:
+                if(std.Class.id==data['class_id']):
+                    raise serializers.ValidationError(('Repetitious student_id'))
+
+
 
         if(class_[0].password != None):
             if(data['password'] == 'Default_Password'):
