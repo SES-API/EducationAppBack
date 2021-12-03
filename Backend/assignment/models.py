@@ -14,6 +14,9 @@ class Assignment(models.Model):
     date = models.DateField(default=datetime.date.today)
     class_fk = models.ForeignKey(Class,related_name="assignment_class",on_delete=models.CASCADE)
     is_graded = models.BooleanField(default=False)
+    min_grade = models.FloatField(default=None, null=True)
+    max_grade = models.FloatField(default=None, null=True)
+    avg_grade = models.FloatField(default=None, null=True)
 
     class Meta:
         unique_together = ('name', 'class_fk',)
@@ -24,6 +27,9 @@ class Question(models.Model):
     weight = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(1)]) # eg. 40%
     assignment_fk = models.ForeignKey(Assignment,related_name="assignment_question",on_delete=models.CASCADE, null=True)
     is_graded = models.BooleanField(default=False)
+    min_grade = models.FloatField(default=None, null=True)
+    max_grade = models.FloatField(default=None, null=True)
+    avg_grade = models.FloatField(default=None, null=True)
 
     class Meta:
         unique_together = ('name', 'assignment_fk',)

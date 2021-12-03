@@ -28,7 +28,7 @@ class CreateAssignment(CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             class_=serializer.validated_data['class_fk']
-            user=User_Model.objects.filter(id=request.user.pk)[0]
+            user=request.user
             if( user in class_.teachers.all() or user in class_.tas.all() or user == class_.headta ):
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
