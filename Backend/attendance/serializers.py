@@ -4,27 +4,28 @@ from django.db.models import fields
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import Session,atend
+from class_app.serializers import ClassPersonSerializer
 
 User_Model=get_user_model()
 
-class ClassPersonSerializer2(serializers.ModelSerializer):
-    profile_link = serializers.SerializerMethodField('get_profile_link')
+# class ClassPersonSerializer2(serializers.ModelSerializer):
+#     profile_link = serializers.SerializerMethodField('get_profile_link')
 
-    def get_profile_link(self, model):
-        request = self.context.get("request")
-        base_url = request.build_absolute_uri('/').strip("/")
-        profile_link = base_url + "/account/profile/" + f"{model.id}"
-        return profile_link
+#     def get_profile_link(self, model):
+#         request = self.context.get("request")
+#         base_url = request.build_absolute_uri('/').strip("/")
+#         profile_link = base_url + "/account/profile/" + f"{model.id}"
+#         return profile_link
 
-    class Meta:
-        model = User_Model
-        fields=['id','first_name','last_name','profile_pic', 'profile_link']
+#     class Meta:
+#         model = User_Model
+#         fields=['id','first_name','last_name','profile_pic', 'profile_link']
 
 
 
 
 class StudentAtend(serializers.ModelSerializer):
-    students=ClassPersonSerializer2()
+    students=ClassPersonSerializer()
     class Meta:
         model = atend
         fields="__all__"
@@ -45,7 +46,7 @@ class MyAtendSerializers(serializers.ModelSerializer):
     session_name = serializers.SerializerMethodField()
     session_date = serializers.SerializerMethodField()
     session_id = serializers.SerializerMethodField()
-    students=ClassPersonSerializer2()
+    students=ClassPersonSerializer()
 
 
     class Meta:

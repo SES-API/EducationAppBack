@@ -70,7 +70,7 @@ class SetAtendsOfSession(GenericAPIView):
                 for atend in sesion.atends.all():
                     #print(atend.students.pk)
                     if atend.students in serializer.validated_data["students"]:
-                        print("true")
+                        # print("true")
                         atend.Present=True
                         atend.save()
                 return Response({'detail':'done'},status=status.HTTP_200_OK)  
