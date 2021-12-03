@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
 from django.shortcuts import get_object_or_404
+from datetime import date
 
 User_Model=get_user_model()
 
@@ -126,3 +127,12 @@ class ProfileSerializer(serializers.ModelSerializer):
             'profile_pic',
             'is_hidden'
         )
+
+    def validate(self, data):
+        birthdate = data.get('birthdate')
+        if birthdate != None:
+            today = date.today()
+            age = (today - birthdate).days / 365
+            if age < 10:
+                raise serializers.ValidationError('You must be at least 10 years old')
+        return data
