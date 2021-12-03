@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
 from rest_framework.generics import GenericAPIView, ListAPIView, ListCreateAPIView, RetrieveAPIView,RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import AllowAny,IsAuthenticated,IsAuthenticatedOrReadOnly
+from rest_framework.views import APIView
 from .permissions import *
 from .models import *
 from .serializers import *
@@ -265,3 +266,16 @@ class SemesterList(ListCreateAPIView):
     permission_classes=[IsAuthenticated]
     filter_backends = [filters.SearchFilter]
     search_fields = ['semester']
+
+
+
+class HasPassword(GenericAPIView):
+    def get(self, request,pk):
+        class_=Class.objects.filter(id=pk)
+        if(class_):
+            if(class_[0].password==None):
+                return Response({'haspassword':'False'},status=status.HTTP_200_OK)
+            else:
+                return Response({'haspassword':'True'},status=status.HTTP_200_OK)  
+        else:
+            return Response({'detail':'there is no class with this id'},status=status.HTTP_404_NOT_FOUND)
