@@ -31,7 +31,7 @@ class ClassPersonSerializer(serializers.ModelSerializer):
 
 class ClassListSerializer(serializers.ModelSerializer):
     # students=ClassPersonSerializer(many=True)
-    teachers=ClassPersonSerializer(many=True)
+    teachers=ClassPersonSerializer(many=True,required=False)
     # tas=ClassPersonSerializer(many=True)
     # headta=ClassPersonSerializer(many=False)
     # semseter=SemesterSerializer(many=False)
