@@ -68,6 +68,15 @@ class ClassRetriveSerializer(serializers.ModelSerializer):
         else:
             return "None"
 
+    def validate(self, data):
+        password = data.get('password')
+        if(password != None):
+            data['has_password'] = True
+        else:
+            data['has_password'] = False
+        return data
+            
+
 
 
 #-----------------------------------------------------------------------------------

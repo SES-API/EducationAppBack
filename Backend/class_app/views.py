@@ -30,6 +30,8 @@ class ClassList(ListCreateAPIView):
         class_=serializer.save()
         class_.teachers.add(request.user)
         class_.owner=request.user
+        if class_.password != None:
+            class_.has_password = True
         class_.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 

@@ -14,16 +14,11 @@ class Semester(models.Model):
         return self.semester
 
 
-
-
-
-
 class University(models.Model):
     name=models.CharField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
-
 
 
 class Class(models.Model):
@@ -38,6 +33,7 @@ class Class(models.Model):
     owner=models.ForeignKey(UserModel,related_name="class_owner",on_delete=models.SET_NULL,null=True)
     university=models.ForeignKey(University, on_delete=models.SET_NULL,related_name="class_university",null=True)
     password=models.CharField(max_length=6,null=True)
+    has_password = models.BooleanField(default=False)
     # semester=models.CharField(max_length=30)
     semester=models.ForeignKey(Semester,on_delete=models.SET_NULL,related_name="class_semester",null=True)
     image=models.ImageField(upload_to="images/class_pics",null=True)
