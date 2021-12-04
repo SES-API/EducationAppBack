@@ -160,9 +160,10 @@ class ResetPasswordView(UpdateAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class GetUserInfo(APIView):
+
     def get(self, request):
         if not(request.user.is_anonymous):
-            serializer = GetUserDataSerializer(request.user)
+            serializer = GetUserDataSerializer(request.user, context={"request": request})
             return Response(serializer.data,status=status.HTTP_200_OK)
         else:
             return Response({"detail": "Authentication credentials were not provided."},status=status.HTTP_401_UNAUTHORIZED)
@@ -208,8 +209,8 @@ class GetProfileView(RetrieveAPIView):
 
     def get(self, request, pk):
         profile = get_object_or_404(User_Model, pk=pk)
-        serializer = ProfileSerializer(profile)
-        if(serializer.data['is_hidden'] == True):
+        serializer = ProfileSerializer(profile, context={"request": request})
+        if(profile.is_hidden == True):
             response = {
                     'status': 'forbidden',
                     'code': status.HTTP_403_FORBIDDEN,
@@ -218,6 +219,14 @@ class GetProfileView(RetrieveAPIView):
             }
             return Response(response, status=status.HTTP_403_FORBIDDEN)
         return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+
+    # def get_queryset(self):
+    #     pk = self.kwargs['pk']
+    #     profile = User_Model.objects.filter(id=pk)
+    #     if(profile):
+    #         if(profile[0].is_hidden == False):
+    #             return profile
+
 
 
 
