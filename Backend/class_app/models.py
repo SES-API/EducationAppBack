@@ -23,7 +23,7 @@ class University(models.Model):
 
 class Class(models.Model):
 
-    name=models.CharField(max_length=50,unique=True)
+    name=models.CharField(max_length=50)
     description=models.TextField(max_length=600,null=True)
 
     teachers=models.ManyToManyField(UserModel,related_name="class_teacher")
