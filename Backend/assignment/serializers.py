@@ -3,6 +3,8 @@ from .models import *
 from django.contrib.auth import get_user_model
 import django_filters.rest_framework
 from django.db.models import Avg, Max, Min
+from class_app.serializers import ClassPersonSerializer
+
 
 User_Model=get_user_model()
 
@@ -25,6 +27,7 @@ class GradeListSerializer(serializers.ListSerializer):
 
 
 class GradeSerializer(serializers.ModelSerializer):
+    student = ClassPersonSerializer()
     class Meta:
         model = Grade
         list_serializer_class = GradeListSerializer
@@ -40,6 +43,7 @@ class AssignmentGradeListSerializer(serializers.ListSerializer):
 
 
 class AssignmentGradeSerializer(serializers.ModelSerializer):
+    student = ClassPersonSerializer()
     class Meta:
         model = AssignmentGrade
         list_serializer_class = AssignmentGradeListSerializer
