@@ -193,10 +193,17 @@ class UpdateProfileView(UpdateAPIView):
     serializer_class = ProfileSerializer
     permission_classes = [IsAuthenticated]
 
+    # def get_object(self):
+    #     user_id = self.request.user.id
+    #     queryset = User_Model.objects.get(id=user_id)
+    #     return queryset
+
     def get_object(self):
         user_id = self.request.user.id
         queryset = User_Model.objects.get(id=user_id)
+        serializer = ProfileSerializer(queryset, context={"request": self.request})
         return queryset
+
 
 
 
