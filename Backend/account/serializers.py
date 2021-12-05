@@ -123,15 +123,7 @@ class GetUserDataSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    profile_pic = serializers.SerializerMethodField('get_profile_url')
-
-    def get_profile_url(self, model):
-        if model.profile_pic:
-            request = self.context.get("request")
-            base_url = request.build_absolute_uri('/').strip("/")
-            profile_url = base_url + '/images/' + f"{model.profile_pic}"
-            return profile_url
-
+    
     class Meta:
         model = User_Model
         fields = [
@@ -145,6 +137,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             'profile_pic',
             'is_hidden'
         ]
+
 
     def validate(self, data):
         birthdate = data.get('birthdate')
