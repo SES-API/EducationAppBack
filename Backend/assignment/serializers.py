@@ -32,13 +32,6 @@ class QuestionSerializer(serializers.ModelSerializer):
         context={'user_id' : self.context.get('user_id'), 'is_student' : self.context.get('is_student')}
         return context
 
-
-    def validate(self, data):
-        # for question in Question.objects.filter(assignment_fk = self.context['assignment_fk']):
-        #     if data.get('name') == question.name:
-        #         raise serializers.ValidationError(('There is another question with this name in this assignment.'))
-        return data
-
     class Meta:
         model = Question
         fields=['id','name', 'full_grade', 'not_graded_count', 'is_graded', 'avg_grade', 'min_grade', 'max_grade','question_grade']
@@ -53,17 +46,60 @@ class QuestionSerializer(serializers.ModelSerializer):
         }
 
 
+class AddQuestionSerializer(serializers.ModelSerializer):
+    def get_serializer_context(self):
+        context={'user_id' : self.context.get('user_id'), 'is_student' : self.context.get('is_student')}
+        return context
+
+    def validate(self, data):
+        assignment_fk = self.context['assignment_fk']
+        student_count = Assignment.objects.filter(id=assignment_fk)[0].class_fk.students.count()
+        data['not_graded_count'] = student_count
+        data['is_graded'] = True
+        if(student_count!=0):
+            data['is_graded'] = False
+        grade_sum = 0
+        for question in Question.objects.filter(assignment_fk = assignment_fk):
+            grade_sum += question.full_grade
+            if data.get('name') == question.name:
+                raise serializers.ValidationError(('There is another question with this name in this assignment.'))
+        if grade_sum + data['full_grade'] != 100:
+            raise serializers.ValidationError(('question grades must have sum of 100.'))
+        return data
+
+    class Meta:
+        model = Question
+        fields=['id','name', 'full_grade', 'not_graded_count', 'is_graded']
+        extra_kwargs = {
+            'not_graded_count' : {'read_only':True},
+            'is_graded' : {'read_only':True},
+        }
+
+
+
 class CreateAssignmentSerializer(serializers.ModelSerializer):
-    assignment_question = QuestionSerializer(many=True, required=False) #context={'assignment_fk' : data['id']}
+    assignment_question = QuestionSerializer(many=True, required=False)
 
     class Meta:
         model = Assignment
         fields=['id', 'name','date', 'weight', 'is_graded', 'not_graded_count','class_fk','assignment_question']
         extra_kwargs = {
-            # 'assignment_question' : {'read_only':True},
             'not_graded_count' : {'read_only':True},
             'is_graded' : {'read_only':True},
         }
+
+    def create(self, validated_data):
+        questions = validated_data.pop('assignment_question')
+        question_names = set()
+        for q in questions:
+            if question_names.__contains__(q['name']):
+                raise serializers.ValidationError(('Questions of one assignment must have unique names.'))
+            question_names.add(q['name'])
+
+        assignment = Assignment.objects.create(**validated_data)
+        for q in questions:
+            Question.objects.create(assignment_fk = assignment, **q)
+        return assignment
 
     def validate(self, data):
         questions = data.get('assignment_question')
@@ -73,11 +109,11 @@ class CreateAssignmentSerializer(serializers.ModelSerializer):
             grade_sum = 0
             for q in questions:
                 grade_sum += q['full_grade']
+                q['not_graded_count'] = data.get('class_fk').students.count()
             if grade_sum != 100:
                 raise serializers.ValidationError(('question grades must have sum of 100.'))
-            data['not_graded_count'] = data.get('class_fk').students.count()
+            data['not_graded_count'] = len(questions)
             data['is_graded'] = False
-
         return data
 
 class AssignmentGradeListSerializer(serializers.ListSerializer):

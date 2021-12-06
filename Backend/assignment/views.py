@@ -60,7 +60,7 @@ class AssignmentObject(RetrieveUpdateDestroyAPIView):
 # add aquestion to an assignment
 @method_decorator(csrf_exempt, name='dispatch')
 class AddQuestion(GenericAPIView):
-    serializer_class = QuestionSerializer
+    serializer_class = AddQuestionSerializer
     permission_classes=[IsAuthenticated]
 
     def get_serializer_context(self):
