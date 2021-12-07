@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.db.models.base import Model
@@ -46,7 +47,7 @@ class Class(models.Model):
 class ClassStudents(models.Model):
     student = models.ForeignKey(UserModel, on_delete=models.CASCADE)
     Class = models.ForeignKey(Class, on_delete=models.CASCADE)
-    studentid=models.CharField(max_length=10)
+    studentid=models.CharField(max_length = 10,validators=[MinValueValidator(6), MaxValueValidator(10)])
 
 
     class Meta:

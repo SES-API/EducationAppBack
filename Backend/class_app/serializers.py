@@ -14,6 +14,17 @@ class SemesterSerializer(serializers.ModelSerializer):
         model = Semester
         fields="__all__"
 
+
+
+class ClassStudentSerializer(serializers.ModelSerializer):
+    student_id = serializers.SerializerMethodField()
+    class Meta:
+        model = User_Model
+        fields=['student_id','id','username','first_name','last_name','email','gender','profile_pic','birthdate','degree','university', 'is_hidden']
+    def get_student_id(self,obj):
+        session=ClassStudents.objects.filter(student=obj)[0]
+        return session.studentid
+
 class ClassPersonSerializer(serializers.ModelSerializer):
     # profile_link = serializers.SerializerMethodField('get_profile_link')
 
@@ -47,7 +58,7 @@ class ClassListSerializer(serializers.ModelSerializer):
             'headta' : {'read_only':True},
         }
 class ClassRetriveSerializer(serializers.ModelSerializer):
-    students=ClassPersonSerializer(many=True)
+    students=ClassStudentSerializer(many=True)
     teachers=ClassPersonSerializer(many=True)
     tas=ClassPersonSerializer(many=True)
     headta=ClassPersonSerializer(many=False)
@@ -209,6 +220,8 @@ class JoinClassSerializer(serializers.Serializer):
                 if(std.Class.id==data['class_id']):
                     raise serializers.ValidationError(('Repetitious student_id'))
 
+        if(len(data["student_id"])<6 or len(data["student_id"])>10 ):
+            raise serializers.ValidationError(('Student number must be between 6 and 10 digits'))
 
 
         if(class_[0].password != None):
