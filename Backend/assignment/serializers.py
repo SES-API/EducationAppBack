@@ -32,6 +32,12 @@ class QuestionSerializer(serializers.ModelSerializer):
         context={'user_id' : self.context.get('user_id'), 'is_student' : self.context.get('is_student')}
         return context
 
+    def validate(self, data):
+        for question in Question.objects.filter(assignment_fk = self.context['assignment_fk']):
+            if data.get('name') == question.name:
+                raise serializers.ValidationError(('There is another question with this name in this assignment.'))
+        return data
+
     class Meta:
         model = Question
         fields=['id','name', 'full_grade', 'not_graded_count', 'is_graded', 'avg_grade', 'min_grade', 'max_grade','question_grade']
@@ -46,37 +52,6 @@ class QuestionSerializer(serializers.ModelSerializer):
         }
 
 
-# class AddQuestionSerializer(serializers.ModelSerializer):
-#     def get_serializer_context(self):
-#         context={'user_id' : self.context.get('user_id'), 'is_student' : self.context.get('is_student')}
-#         return context
-
-#     def validate(self, data):
-#         assignment_fk = self.context['assignment_fk']
-#         student_count = Assignment.objects.filter(id=assignment_fk)[0].class_fk.students.count()
-#         data['not_graded_count'] = student_count
-#         data['is_graded'] = True
-#         if(student_count!=0):
-#             data['is_graded'] = False
-#         grade_sum = 0
-#         for question in Question.objects.filter(assignment_fk = assignment_fk):
-#             grade_sum += question.full_grade
-#             if data.get('name') == question.name:
-#                 raise serializers.ValidationError(('There is another question with this name in this assignment.'))
-#         if grade_sum + data['full_grade'] != 100:
-#             raise serializers.ValidationError(('question grades must have sum of 100.'))
-#         return data
-
-#     class Meta:
-#         model = Question
-#         fields=['id','name', 'full_grade', 'not_graded_count', 'is_graded']
-#         extra_kwargs = {
-#             'not_graded_count' : {'read_only':True},
-#             'is_graded' : {'read_only':True},
-#         }
-
-
-
 
 class AddQuestionSerializer(serializers.ModelSerializer):
     def get_serializer_context(self):
@@ -85,7 +60,8 @@ class AddQuestionSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         assignment_fk = self.context['assignment_fk']
-        student_count = Assignment.objects.filter(id=assignment_fk)[0].class_fk.students.count()
+        assignment = Assignment.objects.filter(id=assignment_fk)[0]
+        student_count = assignment.class_fk.students.count()
         data['not_graded_count'] = student_count
         data['is_graded'] = True
         if(student_count!=0):
@@ -93,6 +69,9 @@ class AddQuestionSerializer(serializers.ModelSerializer):
         for question in Question.objects.filter(assignment_fk = assignment_fk):
             if data.get('name') == question.name:
                 raise serializers.ValidationError(('There is another question with this name in this assignment.'))
+        assignment.is_graded = False
+        assignment.not_graded_count += 1
+        assignment.save()
         return data
 
     class Meta:
@@ -105,73 +84,15 @@ class AddQuestionSerializer(serializers.ModelSerializer):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-# class CreateAssignmentSerializer(serializers.ModelSerializer):
-#     assignment_question = QuestionSerializer(many=True, required=False)
-
-#     class Meta:
-#         model = Assignment
-#         fields=['id', 'name','date', 'weight', 'is_graded', 'not_graded_count','class_fk','assignment_question']
-#         extra_kwargs = {
-#             'not_graded_count' : {'read_only':True},
-#             'is_graded' : {'read_only':True},
-#         }
-
-
 class CreateAssignmentSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Assignment
-        fields=['id', 'name','date', 'weight', 'is_graded', 'not_graded_count','class_fk',]
+        fields=['id', 'name','date', 'weight', 'is_graded', 'not_graded_count','class_fk']
+        extra_kwargs = {
+            'not_graded_count' : {'read_only':True},
+            'is_graded' : {'read_only':True},
+        }
 
-
-
-
-
-
-
-
-
-
-
-    def create(self, validated_data):
-        questions = validated_data.pop('assignment_question')
-        question_names = set()
-        for q in questions:
-            if question_names.__contains__(q['name']):
-                raise serializers.ValidationError(('Questions of one assignment must have unique names.'))
-            question_names.add(q['name'])
-
-        assignment = Assignment.objects.create(**validated_data)
-        for q in questions:
-            Question.objects.create(assignment_fk = assignment, **q)
-        return assignment
-
-    def validate(self, data):
-        questions = data.get('assignment_question')
-        data['not_graded_count'] = 0
-        data['is_graded'] = True
-        if questions:
-            grade_sum = 0
-            for q in questions:
-                grade_sum += q['full_grade']
-                q['not_graded_count'] = data.get('class_fk').students.count()
-            if grade_sum != 100:
-                raise serializers.ValidationError(('question grades must have sum of 100.'))
-            data['not_graded_count'] = len(questions)
-            data['is_graded'] = False
-        return data
 
 class AssignmentGradeListSerializer(serializers.ListSerializer):
     def to_representation(self, data):
@@ -217,7 +138,6 @@ class AssignmentRetrieveSerializer(serializers.ModelSerializer):
 
 
 
-
 class SetQuestionGrades(serializers.ModelSerializer):
     value = serializers.IntegerField(required=True)
     delay = serializers.FloatField(required=True)
@@ -230,85 +150,72 @@ class SetQuestionGrades(serializers.ModelSerializer):
         question=data['question']
         assignment = question.assignment_fk
         student = data['student']
-
         grade = Grade.objects.filter(question = question, student=student)
         if(grade):
             grade = grade[0]
-            assignment_grade = AssignmentGrade.objects.filter(assignment=assignment, student=student)
-            val = round((grade.final_grade * question.weight),2)
-            assignment_grade= assignment_grade[0]
-            assignment_grade.value -= val
+            # assignment_grade = AssignmentGrade.objects.filter(assignment=assignment, student=student)
+            # val = round((grade.final_grade * question.weight),2)
+            # assignment_grade= assignment_grade[0]
+            # assignment_grade.value -= val
             grade.value = data['value']
             grade.delay = data['delay']
             grade.final_grade = round((grade.value*(1-grade.delay)), 2)
             grade.save()
-            val = round((grade.final_grade * question.weight),2)
-            assignment_grade.value += val
-            assignment_grade.save()
+            # val = round((grade.final_grade * question.weight),2)
+            # assignment_grade.value += val
+            # assignment_grade.save()
         else:
             grade = Grade.objects.create(student=student, question=question, value=data['value'], delay=data['delay'])
             grade.final_grade = round((grade.value*(1-grade.delay)), 2)
             grade.save()
 
-            # assignment_grade = AssignmentGrade.objects.filter(assignment=assignment, student=student)
-            # val = round((grade.final_grade * question.weight),2)
-            # print(val)
+        val=0
+        valuesum=0
+        totalsum=0
+        for q in assignment.assignment_question.all():
+            totalsum+=q.full_grade
+            q_grade = q.question_grade.filter(student=student)
+            if(q_grade):
+                valuesum+=q_grade[0].value
+        val=round( ((valuesum*100)/totalsum), 2)
 
-            
-            # if(assignment_grade):
-            #     assignment_grade= assignment_grade[0]
-            #     assignment_grade.value += val
-            #     assignment_grade.save()
-            # else:
-            #     AssignmentGrade.objects.create(assignment=assignment, student=student, value=val)
-
-
-            assignment_grade = AssignmentGrade.objects.filter(assignment=assignment, student=student)
-            val=0
-            valuesum=0
-            totalsum=0
-            for q in assignment.assignment_question:
-                totalsum+=q.full_grade
-                valuesum+=q.question_grade.value
-            val=(valuesum*100)/totalsum
-
-
-
-
-            if(assignment_grade):
-                assignment_grade= assignment_grade[0]
-                assignment_grade.value = val
-                assignment_grade.save()
-            else:
-                AssignmentGrade.objects.create(assignment=assignment, student=student, value=val)
-
-
-
-
-
-
-    def count_graded_assignment(self, assignment):
-        graded = 0
-        for question in assignment.assignment_question.all():
-            if question.not_graded_count == 0:
-                graded += 1
-
-        if graded != 0:
-            assignment.is_graded = False
+        assignment_grade = AssignmentGrade.objects.filter(assignment=assignment, student=student)
+        if(assignment_grade):
+            assignment_grade= assignment_grade[0]
+            assignment_grade.value = val
+            assignment_grade.save()
         else:
-            assignment.is_graded = True
-        assignment.save()
+            AssignmentGrade.objects.create(assignment=assignment, student=student, value=val)
+
 
     def count_graded_question(self, question):
         question_num = question.assignment_fk.class_fk.students.all().count()
         grades_num = Grade.objects.filter(question=question).count()
         not_graded = question_num - grades_num
+        question.not_graded_count = not_graded
 
         if not_graded > 0:
             question.is_graded = False
         else:
             question.is_graded = True
+        
         question.save()
+
+
+    def count_graded_assignment(self, assignment):
+        not_graded = 0
+        for question in assignment.assignment_question.all():
+            if question.is_graded == False:
+                not_graded += 1
+        assignment.not_graded_count = not_graded
+
+        if not_graded == 0:
+            assignment.is_graded = True
+        else:
+            assignment.is_graded = False
+
+        assignment.save()
+
 
     def claculate_aggregates(self, assignment, question):
         question.min_grade = Grade.objects.filter(question=question).aggregate(Min('final_grade'))['final_grade__min']
@@ -329,6 +236,10 @@ class SetQuestionGrades(serializers.ModelSerializer):
         question=data['question']
         if not(question):
             raise serializers.ValidationError(('There is no question with this id.'))
+        
+        if data.get('value') > question.full_grade:
+            raise serializers.ValidationError(('Entered grade is bigger than question grade.'))
+        
         assignment = question.assignment_fk
         class_ = assignment.class_fk
         all_class_students = class_.students.all()

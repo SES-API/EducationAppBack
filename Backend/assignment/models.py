@@ -13,9 +13,9 @@ class Assignment(models.Model):
     name = models.CharField(max_length=50)
     date = models.DateField(default=datetime.date.today)
     class_fk = models.ForeignKey(Class,related_name="assignment_class",on_delete=models.CASCADE)
-    is_graded = models.BooleanField(default=False)
-    not_graded_count = models.IntegerField()
-    weight = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(10)]) # eg. 40%
+    is_graded = models.BooleanField(default=True)
+    not_graded_count = models.IntegerField(default=0) # how many question is not graded
+    weight = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(10)])
     min_grade = models.FloatField(default=None, null=True)
     max_grade = models.FloatField(default=None, null=True)
     avg_grade = models.FloatField(default=None, null=True)
@@ -29,7 +29,7 @@ class Question(models.Model):
     full_grade = models.FloatField(validators=[MinValueValidator(0)]) # eg. 40
     assignment_fk = models.ForeignKey(Assignment,related_name="assignment_question",on_delete=models.CASCADE, null=True)
     is_graded = models.BooleanField(default=False)
-    not_graded_count = models.IntegerField()
+    not_graded_count = models.IntegerField() # how many student is not graded
     min_grade = models.FloatField(default=None, null=True)
     max_grade = models.FloatField(default=None, null=True)
     avg_grade = models.FloatField(default=None, null=True)
