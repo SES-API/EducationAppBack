@@ -19,6 +19,7 @@ class SemesterSerializer(serializers.ModelSerializer):
 class ClassStudentSerializer(serializers.ModelSerializer):
     student_id = serializers.SerializerMethodField()
     class Meta:
+        ref_name = "Student"
         model = User_Model
         fields=['student_id','id','username','first_name','last_name','email','gender','profile_pic','birthdate','degree','university', 'is_hidden']
     def get_student_id(self,obj):
@@ -34,7 +35,8 @@ class ClassPersonSerializer(serializers.ModelSerializer):
     #     profile_link = base_url + "/account/profile/" + f"{model.id}"
     #     return profile_link
 
-    class Meta:
+    class Meta:  
+        ref_name = "Members"
         model = User_Model
         fields=['id','username','first_name','last_name','email','gender','profile_pic','birthdate','degree','university', 'is_hidden']
 
