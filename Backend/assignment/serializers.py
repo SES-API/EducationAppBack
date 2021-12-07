@@ -112,8 +112,8 @@ class AssignmentGradeSerializer(serializers.ModelSerializer):
 
 
 class AssignmentRetrieveSerializer(serializers.ModelSerializer):
-    assignment_question=QuestionSerializer(many=True)
-    assignment_grade=AssignmentGradeSerializer(many=True)
+    assignment_question=QuestionSerializer(many=True, read_only=True)
+    assignment_grade=AssignmentGradeSerializer(many=True, read_only=True)
 
     def get_serializer_context(self):
         context={'user_id' : self.context.get('user_id'), 'is_student' : self.context.get('is_student')}
@@ -125,6 +125,17 @@ class AssignmentRetrieveSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(('There is another assignment with this name in this class.'))
         return data
 
+    # def update(self, instance, validated_data):
+    #     questions = validated_data.pop('assignment_question')
+    #     for q in questions:
+    #         for question in Question.objects.filter(assignment_fk = self.context['assignment_fk']):
+    #             print(q['name'])
+    #             print(question.name)
+    #             if q['name'] == question.name:
+    #                 raise serializers.ValidationError(('There is another question with this name in this assignment.'))
+    #     return validated_data
+
+
     class Meta:
         model = Assignment
         fields=['id', 'name','date','assignment_question', 'assignment_grade', 'avg_grade', 'min_grade', 'max_grade', 'is_graded', 'not_graded_count']
@@ -133,6 +144,7 @@ class AssignmentRetrieveSerializer(serializers.ModelSerializer):
             'avg_grade' : {'read_only':True},
             'min_grade' : {'read_only':True},
             'max_grade' : {'read_only':True},
+            'assignment_question' : {'read_only':True},
             'assignment_grade' : {'read_only':True},
         }
 
@@ -178,7 +190,7 @@ class SetQuestionGrades(serializers.ModelSerializer):
             if(q_grade):
                 valuesum+=q_grade[0].value
         val=round( ((valuesum*100)/totalsum), 2)
-
+ 
         assignment_grade = AssignmentGrade.objects.filter(assignment=assignment, student=student)
         if(assignment_grade):
             assignment_grade= assignment_grade[0]
@@ -186,7 +198,6 @@ class SetQuestionGrades(serializers.ModelSerializer):
             assignment_grade.save()
         else:
             AssignmentGrade.objects.create(assignment=assignment, student=student, value=val)
-
 
     def count_graded_question(self, question):
         question_num = question.assignment_fk.class_fk.students.all().count()
@@ -238,7 +249,7 @@ class SetQuestionGrades(serializers.ModelSerializer):
             raise serializers.ValidationError(('There is no question with this id.'))
         
         if data.get('value') > question.full_grade:
-            raise serializers.ValidationError(('Entered grade is bigger than question grade.'))
+            raise serializers.ValidationError((f'Maximum grade for question {question.name} is {question.full_grade}'))
         
         assignment = question.assignment_fk
         class_ = assignment.class_fk

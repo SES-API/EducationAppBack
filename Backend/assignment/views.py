@@ -52,8 +52,8 @@ class AssignmentObject(RetrieveUpdateDestroyAPIView):
         if (user in class_.teachers.all() or
             user in class_.tas.all() or
             user == class_.headta):
-            return {'user_id': self.request.user.id , 'is_student':False, 'class_fk':class_.id}
-        return {'user_id': self.request.user.id , 'is_student':True, 'class_fk':class_.id}
+            return {'user_id': self.request.user.id , 'is_student':False, 'class_fk':class_.id, 'assignment_fk': assignment_id }
+        return {'user_id': self.request.user.id , 'is_student':True, 'class_fk':class_.id, 'assignment_fk': assignment_id }
 
 
 
