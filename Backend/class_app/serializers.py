@@ -115,7 +115,7 @@ class SetHeadTaSerializer(serializers.Serializer):
             raise serializers.ValidationError(('There is no User(headta) with this id'))
         if(headta[0] == class_[0].headta):
             raise serializers.ValidationError(('This User Already is HeadTA'))
-        if(headta[0] not in class_[0].students.all() and headta[0] not in class_[0].tas.all()):
+        if(headta[0] not in class_[0].students.all() and headta[0] not in class_[0].tas.all() and headta[0] not in class_[0].teachers.all()):
             raise serializers.ValidationError(('There is no User(headta) with this id in class'))
         return data
 
@@ -134,7 +134,7 @@ class SetTaSerializer(serializers.Serializer):
             raise serializers.ValidationError(('There is no User(ta) with this id'))
         if(ta[0] in class_[0].tas.all()):
             raise serializers.ValidationError(('This User Already is TA'))
-        if(ta[0] not in class_[0].students.all() and ta[0] != class_[0].headta):
+        if(ta[0] not in class_[0].students.all() and ta[0] != class_[0].headta and ta[0] not in class_[0].teachers.all()):
             raise serializers.ValidationError(('There is no User(ta) with this id in class'))
         return data
 #-----------------------------------------------------------------------------------
@@ -168,6 +168,28 @@ class AddTaWithEmailSerializer(serializers.Serializer):
             raise serializers.ValidationError(('There is no User(headta) with this id'))
         if(ta[0] in class_[0].tas.all()):
             raise serializers.ValidationError(('This User Already is TA'))
+        if(ta[0] in class_[0].students.all() or ta[0] in class_[0].teachers.all() or ta[0] == class_[0].headta):
+            raise serializers.ValidationError(('This User Already is in class as another role'))
+        return data
+
+class AddTeacherWithEmailSerializer(serializers.Serializer):
+    teacher_email = serializers.EmailField(required=True)
+    class_id=serializers.IntegerField(required=True)
+
+    def validate(self, data):
+        class_=Class.objects.filter(id=data.get("class_id"))
+        teacher=User_Model.objects.filter(email=data.get("teacher_email"))
+        if not(class_):
+            raise serializers.ValidationError(('There is no Class with this id'))
+    
+        if not(teacher):
+            raise serializers.ValidationError(('There is no User(teacher) with this id'))
+            
+        if(teacher[0] in class_[0].teachers.all()):
+            raise serializers.ValidationError(('This User Already is teacher'))
+
+        if(teacher[0] in class_[0].students.all() or teacher[0] in class_[0].tas.all() or teacher[0] == class_[0].headta):
+            raise serializers.ValidationError(('This User Already is in class as another role'))
         return data
 #-----------------------------------------------------------------------------------
 

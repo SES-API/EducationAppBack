@@ -15,6 +15,7 @@ urlpatterns = [
 
     path('set_headta_email/', SetHeadTaWithEmail.as_view(), name='set_headta_email'),
     path('add_ta_email/', AddTaWithEmail.as_view(), name='add_ta_email'),
+    path('add_teacher_email/', AddTeacherWithEmail.as_view(), name='add_teacher_email'),
 
     path('myclasses/', MyClasses.as_view(), name='myclasses'),
     # join and leave class as an student
