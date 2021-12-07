@@ -23,7 +23,6 @@ class CreateAssignment(CreateAPIView):
     serializer_class = CreateAssignmentSerializer
     permission_classes=[IsAuthenticated]
 
-
     def create(self, request,*args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -32,8 +31,10 @@ class CreateAssignment(CreateAPIView):
             if( user in class_.teachers.all() or user in class_.tas.all() or user == class_.headta ):
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -42,7 +43,7 @@ class CreateAssignment(CreateAPIView):
 class AssignmentObject(RetrieveUpdateDestroyAPIView):
     queryset = Assignment.objects.all()
     serializer_class = AssignmentRetrieveSerializer
-    permission_classes=[OBJ__IsAssignmentClassTeacherOrTa]
+    permission_classes=[OBJ__IsAssignmentClassTeacherOrTa] #chek here
 
     def get_serializer_context(self):
         assignment_id = self.kwargs['pk']
