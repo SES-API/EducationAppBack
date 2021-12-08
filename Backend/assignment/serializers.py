@@ -26,6 +26,7 @@ class GradeSerializer(serializers.ModelSerializer):
 
 
 class QuestionSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
     question_grade=GradeSerializer(many=True, required=False)
 
     def get_serializer_context(self):
@@ -34,7 +35,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         for question in Question.objects.filter(assignment_fk = self.context['assignment_fk']):
-            if data.get('name') == question.name:
+            if question.id!=data.get('id') and data.get('name') == question.name:
                 raise serializers.ValidationError(('There is another question with this name in this assignment.'))
         return data
 
@@ -112,7 +113,7 @@ class AssignmentGradeSerializer(serializers.ModelSerializer):
 
 
 class AssignmentRetrieveSerializer(serializers.ModelSerializer):
-    assignment_question=QuestionSerializer(many=True, read_only=True)
+    assignment_question=QuestionSerializer(many=True)
     assignment_grade=AssignmentGradeSerializer(many=True, read_only=True)
 
     def get_serializer_context(self):
@@ -125,15 +126,43 @@ class AssignmentRetrieveSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(('There is another assignment with this name in this class.'))
         return data
 
-    # def update(self, instance, validated_data):
-    #     questions = validated_data.pop('assignment_question')
-    #     for q in questions:
-    #         for question in Question.objects.filter(assignment_fk = self.context['assignment_fk']):
-    #             print(q['name'])
-    #             print(question.name)
-    #             if q['name'] == question.name:
-    #                 raise serializers.ValidationError(('There is another question with this name in this assignment.'))
-    #     return validated_data
+    def update(self, instance, validated_data):
+        if (validated_data.get('name')):
+            instance.name = validated_data.get('name')
+        if(validated_data.get('date')):
+            instance.date = validated_data.get('date')
+        instance.save()
+
+        questions = validated_data.get('assignment_question')
+        question_names = set()
+        for q in questions:
+            if question_names.__contains__(q['name']):
+                raise serializers.ValidationError(('Questions of one assignment must have unique names.'))
+            question_names.add(q['name'])
+
+        for q in questions:
+            q_id = q.get('id', None)
+            if(q_id):
+                q_instance = instance.assignment_question.filter(id=q_id)[0]
+                q_name = q.get('name')
+                if(q_name and q_instance.name != q_name):
+                    q_instance.name = q_name
+                q_full_grade = q.get('full_grade')
+                if(q_full_grade and q_full_grade != q_instance.full_grade):
+                    for grade in Grade.objects.filter(question=q_id):
+                        grade.value *= round((q_full_grade/q_instance.full_grade), 2)
+                        grade.final_grade = round((grade.value*(1-grade.delay)), 2)
+                        grade.save()
+                    q_instance.full_grade = q_full_grade
+                    # change min, max, avg on question
+                    # change assignment grade
+                    # change min, max, avg on assignment
+                    # change class grade
+                q_instance.save()
+            else:
+                Question.objects.create(assignment_fk = instance.id ,**q)
+
+        return instance
 
 
     class Meta:
