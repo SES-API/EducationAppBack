@@ -45,7 +45,7 @@ class Grade(models.Model):
     question = models.ForeignKey(Question, related_name="question_grade", on_delete=models.CASCADE)
     student = models.ForeignKey(User, related_name="student_grade",on_delete=models.CASCADE)
     # value = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(question.get_full_grade())])
-    value = models.IntegerField(default=0, validators=[MinValueValidator(0)])
+    value = models.FloatField(default=0, validators=[MinValueValidator(0)])
     delay = models.FloatField(default=0, validators=[MinValueValidator(0), MaxValueValidator(1)]) # eg. 40%
     final_grade = models.FloatField(null=True, blank=True)
 
