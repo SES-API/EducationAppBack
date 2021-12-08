@@ -5,10 +5,52 @@ import django_filters.rest_framework
 from django.db.models import Avg, Max, Min
 from class_app.serializers import ClassPersonSerializer
 from django.dispatch import receiver
-from django.db.models.signals import post_save
-
+from django.db.models.signals import post_save, post_delete
+from class_app.models import ClassStudents
 
 User_Model=get_user_model()
+
+
+def count_graded_question(question):
+    student_num = question.assignment_fk.class_fk.students.all().count()
+    grades_num = Grade.objects.filter(question=question).count()
+    not_graded = student_num - grades_num
+    question.not_graded_count = not_graded
+
+    if not_graded > 0:
+        question.is_graded = False
+    else:
+        question.is_graded = True
+    
+    question.save()
+
+
+def count_graded_assignment(assignment):
+    not_graded = 0
+    for question in assignment.assignment_question.all():
+        if question.is_graded == False:
+            not_graded += 1
+    assignment.not_graded_count = not_graded
+
+    if not_graded == 0:
+        assignment.is_graded = True
+    else:
+        assignment.is_graded = False
+
+    assignment.save()
+
+
+@receiver(post_delete, sender=ClassStudents)
+@receiver(post_save, sender=ClassStudents)
+def student_num_changed(sender, **kwargs):
+    class_ = kwargs['instance'].Class
+    assignments = Assignment.objects.filter(class_fk = class_)
+    for assignment in assignments:
+        questions = Question.objects.filter(assignment_fk = assignment)
+        for question in questions:
+            count_graded_question(question)
+        count_graded_assignment(assignment)
+
 
 
 @receiver(post_save, sender=Grade)
@@ -217,11 +259,6 @@ class AssignmentRetrieveSerializer(serializers.ModelSerializer):
                         grade.value = val
                         grade.final_grade = round((val*(1-grade.delay)), 2)
                         grade.save()
-                    # change min, max, avg on question
-                    # change assignment grade
-                    # change min, max, avg on assignment
-                    # change class grade
-                # q_instance.save()
             else:
                 Question.objects.create(assignment_fk = instance.id ,**q)
 
@@ -266,67 +303,35 @@ class SetQuestionGrades(serializers.ModelSerializer):
             grade.final_grade = round((grade.value*(1-grade.delay)), 2)
             grade.save()
 
-        # val=0
-        # valuesum=0
-        # totalsum=0
-        # for q in assignment.assignment_question.all():
-        #     totalsum+=q.full_grade
-        #     q_grade = q.question_grade.filter(student=student)
-        #     if(q_grade):
-        #         valuesum+=q_grade[0].value
-        # val=round( ((valuesum*100)/totalsum), 2)
- 
-        # assignment_grade = AssignmentGrade.objects.filter(assignment=assignment, student=student)
-        # if(assignment_grade):
-        #     assignment_grade= assignment_grade[0]
-        #     assignment_grade.value = val
-        #     assignment_grade.save()
-        # else:
-        #     AssignmentGrade.objects.create(assignment=assignment, student=student, value=val)
 
-    def count_graded_question(self, question):
-        question_num = question.assignment_fk.class_fk.students.all().count()
-        grades_num = Grade.objects.filter(question=question).count()
-        not_graded = question_num - grades_num
-        question.not_graded_count = not_graded
+    # def count_graded_question(self, question):
+    #     student_num = question.assignment_fk.class_fk.students.all().count()
+    #     grades_num = Grade.objects.filter(question=question).count()
+    #     not_graded = student_num - grades_num
+    #     question.not_graded_count = not_graded
 
-        if not_graded > 0:
-            question.is_graded = False
-        else:
-            question.is_graded = True
+    #     if not_graded > 0:
+    #         question.is_graded = False
+    #     else:
+    #         question.is_graded = True
         
-        question.save()
-
-
-    def count_graded_assignment(self, assignment):
-        not_graded = 0
-        for question in assignment.assignment_question.all():
-            if question.is_graded == False:
-                not_graded += 1
-        assignment.not_graded_count = not_graded
-
-        if not_graded == 0:
-            assignment.is_graded = True
-        else:
-            assignment.is_graded = False
-
-        assignment.save()
-
-
-    # def claculate_aggregates(self, assignment, question):
-    #     question.min_grade = Grade.objects.filter(question=question).aggregate(Min('final_grade'))['final_grade__min']
-    #     question.max_grade = Grade.objects.filter(question=question).aggregate(Max('final_grade'))['final_grade__max']
-    #     question.avg_grade = Grade.objects.filter(question=question).aggregate(Avg('final_grade'))['final_grade__avg']
     #     question.save()
-        
 
-    #     assignment.min_grade = AssignmentGrade.objects.filter(assignment=assignment).aggregate(Min('value'))['value__min']
-    #     assignment.max_grade = AssignmentGrade.objects.filter(assignment=assignment).aggregate(Max('value'))['value__max']
-    #     assignment.avg_grade = AssignmentGrade.objects.filter(assignment=assignment).aggregate(Avg('value'))['value__avg']
+
+    # def count_graded_assignment(self, assignment):
+    #     not_graded = 0
+    #     for question in assignment.assignment_question.all():
+    #         if question.is_graded == False:
+    #             not_graded += 1
+    #     assignment.not_graded_count = not_graded
+
+    #     if not_graded == 0:
+    #         assignment.is_graded = True
+    #     else:
+    #         assignment.is_graded = False
+
     #     assignment.save()
-    #     self.count_graded_assignment(assignment)
 
-    
 
     def validate(self, data):
         question=data['question']
@@ -345,8 +350,8 @@ class SetQuestionGrades(serializers.ModelSerializer):
         
         if(self.context['user'] == class_.headta or self.context['user'] in class_.teachers.all() or self.context['user'] in class_.tas.all()):
             self.set_question_grade(data)
-            self.count_graded_question(question)
-            self.count_graded_assignment(assignment)
+            count_graded_question(question)
+            count_graded_assignment(assignment)
             return data
         else:
             raise serializers.ValidationError(('You do not have permission to perform this action.'))
