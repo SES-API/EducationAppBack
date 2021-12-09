@@ -3,7 +3,7 @@ from .models import *
 from django.contrib.auth import get_user_model
 import django_filters.rest_framework
 from django.db.models import Avg, Max, Min
-from class_app.serializers import ClassPersonSerializer
+from class_app.serializers import ClassStudentSerializer
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
 from class_app.models import ClassStudents
@@ -40,96 +40,8 @@ def count_graded_assignment(assignment):
     assignment.save()
 
 
-@receiver(post_delete, sender=ClassStudents)
-@receiver(post_save, sender=ClassStudents)
-def student_num_changed(sender, **kwargs):
-    class_ = kwargs['instance'].Class
-    assignments = Assignment.objects.filter(class_fk = class_)
-    for assignment in assignments:
-        questions = Question.objects.filter(assignment_fk = assignment)
-        for question in questions:
-            count_graded_question(question)
-        count_graded_assignment(assignment)
-
-
-@receiver(post_delete, sender=Question)
-def question_deleted(sender, **kwargs):
-    print("1111111111111111")
-    question = kwargs['instance']
-    assignment = question.assignment_fk
-    count_graded_assignment(assignment)
-    students = assignment.class_fk.students.all()
-    for student in students:
-        has_asg_grade = True
-        val=0
-        valuesum=0
-        totalsum=0
-        for q in assignment.assignment_question.all():
-            totalsum+=q.full_grade
-            q_grade = q.question_grade.filter(student=student)
-            if(q_grade):
-                valuesum+=q_grade[0].value
-            else:
-                has_asg_grade = False
-        val=round( ((valuesum*100)/totalsum), 2)
-
-        if(has_asg_grade):
-            assignment_grade = AssignmentGrade.objects.filter(assignment=assignment, student=student)
-            if(assignment_grade):
-                assignment_grade= assignment_grade[0]
-                assignment_grade.value = val
-                assignment_grade.save()
-            else:
-                AssignmentGrade.objects.create(assignment=assignment, student=student, value=val)
-        else:
-            assignment_grade = AssignmentGrade.objects.filter(assignment=assignment, student=student)
-            assignment_grade.delete()
-
-    asg_min_grade = AssignmentGrade.objects.filter(assignment=assignment).aggregate(Min('value'))['value__min']
-    if(asg_min_grade):
-        assignment.min_grade = round(asg_min_grade, 2)
-    else:
-        assignment.min_grade = None
-    asg_max_grade = AssignmentGrade.objects.filter(assignment=assignment).aggregate(Max('value'))['value__max']
-    if(asg_max_grade):
-        assignment.max_grade = round(asg_max_grade, 2)
-    else:
-        assignment.max_grade = None
-    asg_avg_grade = AssignmentGrade.objects.filter(assignment=assignment).aggregate(Avg('value'))['value__avg']
-    if(asg_avg_grade):
-        assignment.avg_grade = round(asg_avg_grade, 2)
-    else:
-        assignment.avg_grade = None
-    assignment.save()
-
-
-
-
-@receiver(post_save, sender=Grade)
-def my_handler(sender, **kwargs):
-    new_grade = kwargs['instance']
-    question = new_grade.question
-    assignment = question.assignment_fk
-
-    q_min_grade = Grade.objects.filter(question=question).aggregate(Min('final_grade'))['final_grade__min']
-    if(q_min_grade):
-        question.min_grade = round(q_min_grade, 2)
-    else:
-        question.min_grade = None
-    q_max_grade = Grade.objects.filter(question=question).aggregate(Max('final_grade'))['final_grade__max']
-    if(q_max_grade):
-        question.max_grade = round(q_max_grade, 2)
-    else:
-        question.max_grade = None
-    q_avg_grade = Grade.objects.filter(question=question).aggregate(Avg('final_grade'))['final_grade__avg']
-    if(q_avg_grade):
-        question.avg_grade = round(q_avg_grade, 2)
-    else:
-        question.avg_grade = None
-    question.save()
-
+def calculate_assignment_grades(assignment, student):
     has_asg_grade = True
-    student = new_grade.student
     val=0
     valuesum=0
     totalsum=0
@@ -155,6 +67,7 @@ def my_handler(sender, **kwargs):
         assignment_grade.delete()
 
 
+def calculate_assignment_properties(assignment):
     asg_min_grade = AssignmentGrade.objects.filter(assignment=assignment).aggregate(Min('value'))['value__min']
     if(asg_min_grade):
         assignment.min_grade = round(asg_min_grade, 2)
@@ -174,6 +87,60 @@ def my_handler(sender, **kwargs):
 
 
 
+@receiver(post_delete, sender=ClassStudents)
+@receiver(post_save, sender=ClassStudents)
+def student_num_changed(sender, **kwargs):
+    class_ = kwargs['instance'].Class
+    assignments = Assignment.objects.filter(class_fk = class_)
+    for assignment in assignments:
+        questions = Question.objects.filter(assignment_fk = assignment)
+        for question in questions:
+            count_graded_question(question)
+        count_graded_assignment(assignment)
+
+
+@receiver(post_delete, sender=Question)
+def question_deleted(sender, **kwargs):
+    question = kwargs['instance']
+    assignment = question.assignment_fk
+    count_graded_assignment(assignment)
+    students = assignment.class_fk.students.all()
+    for student in students:
+        calculate_assignment_grades(assignment, student)
+
+    calculate_assignment_properties(assignment)
+
+
+@receiver(post_save, sender=Grade)
+def my_handler(sender, **kwargs):
+    new_grade = kwargs['instance']
+    question = new_grade.question
+    assignment = question.assignment_fk
+
+    q_min_grade = Grade.objects.filter(question=question).aggregate(Min('final_grade'))['final_grade__min']
+    if(q_min_grade):
+        question.min_grade = round(q_min_grade, 2)
+    else:
+        question.min_grade = None
+    q_max_grade = Grade.objects.filter(question=question).aggregate(Max('final_grade'))['final_grade__max']
+    if(q_max_grade):
+        question.max_grade = round(q_max_grade, 2)
+    else:
+        question.max_grade = None
+    q_avg_grade = Grade.objects.filter(question=question).aggregate(Avg('final_grade'))['final_grade__avg']
+    if(q_avg_grade):
+        question.avg_grade = round(q_avg_grade, 2)
+    else:
+        question.avg_grade = None
+    question.save()
+
+    calculate_assignment_grades(assignment, new_grade.student)
+
+    calculate_assignment_properties(assignment)
+
+
+
+
 class GradeListSerializer(serializers.ListSerializer):
     def to_representation(self, data):
         if self.context.get('is_student') == True:
@@ -182,12 +149,14 @@ class GradeListSerializer(serializers.ListSerializer):
         return super(GradeListSerializer, self).to_representation(data)
 
 
+
 class GradeSerializer(serializers.ModelSerializer):
-    student = ClassPersonSerializer()
+    student = ClassStudentSerializer()
     class Meta:
         model = Grade
         list_serializer_class = GradeListSerializer
         fields=['value', 'delay', 'student', 'final_grade']
+
 
 
 class QuestionSerializer(serializers.ModelSerializer):
@@ -337,7 +306,7 @@ class AssignmentRetrieveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Assignment
-        fields=['id', 'name','date','assignment_question', 'assignment_grade', 'avg_grade', 'min_grade', 'max_grade', 'is_graded', 'not_graded_count']
+        fields=['id', 'name','date','assignment_question', 'assignment_grade', 'avg_grade', 'min_grade', 'max_grade', 'is_graded', 'not_graded_count', 'class_fk']
         extra_kwargs = {
             'class_fk' : {'read_only':True},
             'avg_grade' : {'read_only':True},
@@ -374,35 +343,6 @@ class SetQuestionGrades(serializers.ModelSerializer):
             grade.save()
 
 
-    # def count_graded_question(self, question):
-    #     student_num = question.assignment_fk.class_fk.students.all().count()
-    #     grades_num = Grade.objects.filter(question=question).count()
-    #     not_graded = student_num - grades_num
-    #     question.not_graded_count = not_graded
-
-    #     if not_graded > 0:
-    #         question.is_graded = False
-    #     else:
-    #         question.is_graded = True
-        
-    #     question.save()
-
-
-    # def count_graded_assignment(self, assignment):
-    #     not_graded = 0
-    #     for question in assignment.assignment_question.all():
-    #         if question.is_graded == False:
-    #             not_graded += 1
-    #     assignment.not_graded_count = not_graded
-
-    #     if not_graded == 0:
-    #         assignment.is_graded = True
-    #     else:
-    #         assignment.is_graded = False
-
-    #     assignment.save()
-
-
     def validate(self, data):
         question=data['question']
         if not(question):
@@ -425,3 +365,4 @@ class SetQuestionGrades(serializers.ModelSerializer):
             return data
         else:
             raise serializers.ValidationError(('You do not have permission to perform this action.'))
+        
