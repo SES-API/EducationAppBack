@@ -5,7 +5,7 @@ from rest_framework.permissions import SAFE_METHODS
 class OBJ__IsAssignmentClassTeacherOrTa(BasePermission):
     
     def has_object_permission(self, request, view, obj):
-        class_ = obj.class_fk
+        class_ = obj.class_id
         return bool(
             request.method in SAFE_METHODS and request.user in class_.students.all()
             or
@@ -23,7 +23,7 @@ class OBJ__IsAssignmentClassTeacherOrTa(BasePermission):
 class OBJ__IsQuestionClassTeacherOrTa(BasePermission):
     
     def has_object_permission(self, request, view, obj):
-        class_ = obj.assignment_fk.class_fk
+        class_ = obj.assignment_id.class_id
         return bool(
             request.method in SAFE_METHODS and request.user in class_.students.all()
             or

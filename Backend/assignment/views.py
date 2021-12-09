@@ -26,7 +26,7 @@ class CreateAssignment(CreateAPIView):
     def create(self, request,*args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            class_=serializer.validated_data['class_fk']
+            class_=serializer.validated_data['class_id']
             user=request.user
             if( user in class_.teachers.all() or user in class_.tas.all() or user == class_.headta ):
                 serializer.save()
@@ -47,13 +47,13 @@ class AssignmentObject(RetrieveUpdateDestroyAPIView):
 
     def get_serializer_context(self):
         assignment_id = self.kwargs['pk']
-        class_ = Assignment.objects.filter(id=assignment_id)[0].class_fk
+        class_ = Assignment.objects.filter(id=assignment_id)[0].class_id
         user = self.request.user
         if (user in class_.teachers.all() or
             user in class_.tas.all() or
             user == class_.headta):
-            return {'user_id': self.request.user.id , 'is_student':False, 'class_fk':class_.id, 'assignment_fk': assignment_id }
-        return {'user_id': self.request.user.id , 'is_student':True, 'class_fk':class_.id, 'assignment_fk': assignment_id }
+            return {'user_id': self.request.user.id , 'is_student':False, 'class_id':class_.id, 'assignment_id': assignment_id }
+        return {'user_id': self.request.user.id , 'is_student':True, 'class_id':class_.id, 'assignment_id': assignment_id }
 
 
 
@@ -65,19 +65,19 @@ class AddQuestion(GenericAPIView):
     permission_classes=[IsAuthenticated]
 
     def get_serializer_context(self):
-        return {'assignment_fk': self.kwargs['pk']}
+        return {'assignment_id': self.kwargs['pk']}
 
     def post(self, request, pk):
         serializer = self.get_serializer(data=request.data)
         assignment=Assignment.objects.filter(id=pk)
         if not assignment:
             return Response({'detail':'There is no assignment with this id'},status=status.HTTP_400_BAD_REQUEST)
-        class_ = assignment[0].class_fk
+        class_ = assignment[0].class_id
         user=request.user
         if( user in class_.teachers.all() or user in class_.tas.all() or user == class_.headta ):
             if serializer.is_valid():
                 question = serializer.save()
-                question.assignment_fk = assignment[0]
+                question.assignment_id = assignment[0]
                 question.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -94,8 +94,8 @@ class QuestionObject(RetrieveUpdateDestroyAPIView):
 
     def get_serializer_context(self):
         question_id = self.kwargs['pk']
-        assignment_id = Question.objects.filter(id=question_id)[0].assignment_fk
-        return {'assignment_fk':assignment_id}
+        assignment_id = Question.objects.filter(id=question_id)[0].assignment_id
+        return {'assignment_id':assignment_id}
 
 
 
@@ -143,5 +143,5 @@ class AssignmentList(ListAPIView):
             user in class_.tas.all() or
             user in class_.students.all() or
             user == class_.headta):
-            return Assignment.objects.filter(class_fk=class_id)
+            return Assignment.objects.filter(class_id=class_id)
         return []
