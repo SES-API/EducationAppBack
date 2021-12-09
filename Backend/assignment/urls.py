@@ -6,7 +6,7 @@ app_name='assignment'
 
 
 urlpatterns = [
-    # add an assignment by teacher/ta (get class_fk in body)
+    # add an assignment by teacher/ta (get class_id in body)
     path('', CreateAssignment.as_view(), name='create_assignment'),
 
     # get/update/delete an assignment ( pk is assignment id )
