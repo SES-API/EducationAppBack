@@ -5,7 +5,6 @@ from django.db.models.base import Model
 # Create your models here.
 
 
-
 UserModel=get_user_model()
 
 
