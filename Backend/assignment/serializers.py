@@ -52,6 +52,58 @@ def student_num_changed(sender, **kwargs):
         count_graded_assignment(assignment)
 
 
+@receiver(post_delete, sender=Question)
+def question_deleted(sender, **kwargs):
+    print("1111111111111111")
+    question = kwargs['instance']
+    assignment = question.assignment_fk
+    count_graded_assignment(assignment)
+    students = assignment.class_fk.students.all()
+    for student in students:
+        has_asg_grade = True
+        val=0
+        valuesum=0
+        totalsum=0
+        for q in assignment.assignment_question.all():
+            totalsum+=q.full_grade
+            q_grade = q.question_grade.filter(student=student)
+            if(q_grade):
+                valuesum+=q_grade[0].value
+            else:
+                has_asg_grade = False
+        val=round( ((valuesum*100)/totalsum), 2)
+
+        if(has_asg_grade):
+            assignment_grade = AssignmentGrade.objects.filter(assignment=assignment, student=student)
+            if(assignment_grade):
+                assignment_grade= assignment_grade[0]
+                assignment_grade.value = val
+                assignment_grade.save()
+            else:
+                AssignmentGrade.objects.create(assignment=assignment, student=student, value=val)
+        else:
+            assignment_grade = AssignmentGrade.objects.filter(assignment=assignment, student=student)
+            assignment_grade.delete()
+
+    asg_min_grade = AssignmentGrade.objects.filter(assignment=assignment).aggregate(Min('value'))['value__min']
+    if(asg_min_grade):
+        assignment.min_grade = round(asg_min_grade, 2)
+    else:
+        assignment.min_grade = None
+    asg_max_grade = AssignmentGrade.objects.filter(assignment=assignment).aggregate(Max('value'))['value__max']
+    if(asg_max_grade):
+        assignment.max_grade = round(asg_max_grade, 2)
+    else:
+        assignment.max_grade = None
+    asg_avg_grade = AssignmentGrade.objects.filter(assignment=assignment).aggregate(Avg('value'))['value__avg']
+    if(asg_avg_grade):
+        assignment.avg_grade = round(asg_avg_grade, 2)
+    else:
+        assignment.avg_grade = None
+    assignment.save()
+
+
+
 
 @receiver(post_save, sender=Grade)
 def my_handler(sender, **kwargs):
@@ -62,12 +114,18 @@ def my_handler(sender, **kwargs):
     q_min_grade = Grade.objects.filter(question=question).aggregate(Min('final_grade'))['final_grade__min']
     if(q_min_grade):
         question.min_grade = round(q_min_grade, 2)
+    else:
+        question.min_grade = None
     q_max_grade = Grade.objects.filter(question=question).aggregate(Max('final_grade'))['final_grade__max']
     if(q_max_grade):
         question.max_grade = round(q_max_grade, 2)
+    else:
+        question.max_grade = None
     q_avg_grade = Grade.objects.filter(question=question).aggregate(Avg('final_grade'))['final_grade__avg']
     if(q_avg_grade):
         question.avg_grade = round(q_avg_grade, 2)
+    else:
+        question.avg_grade = None
     question.save()
 
     has_asg_grade = True
@@ -100,12 +158,18 @@ def my_handler(sender, **kwargs):
     asg_min_grade = AssignmentGrade.objects.filter(assignment=assignment).aggregate(Min('value'))['value__min']
     if(asg_min_grade):
         assignment.min_grade = round(asg_min_grade, 2)
+    else:
+        assignment.min_grade = None
     asg_max_grade = AssignmentGrade.objects.filter(assignment=assignment).aggregate(Max('value'))['value__max']
     if(asg_max_grade):
         assignment.max_grade = round(asg_max_grade, 2)
+    else:
+        assignment.max_grade = None
     asg_avg_grade = AssignmentGrade.objects.filter(assignment=assignment).aggregate(Avg('value'))['value__avg']
     if(asg_avg_grade):
         assignment.avg_grade = round(asg_avg_grade, 2)
+    else:
+        assignment.avg_grade = None
     assignment.save()
 
 
@@ -173,6 +237,12 @@ class AddQuestionSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(('There is another question with this name in this assignment.'))
         assignment.is_graded = False
         assignment.not_graded_count += 1
+        assignment_grades = AssignmentGrade.objects.filter(assignment=assignment)
+        for assignment_grade in assignment_grades:
+            assignment_grade.delete()
+        assignment.min_grade = None
+        assignment.max_grade = None
+        assignment.avg_grade = None
         assignment.save()
         return data
 
