@@ -29,7 +29,11 @@ class CreateAssignment(CreateAPIView):
             class_=serializer.validated_data['class_id']
             user=request.user
             if( user in class_.teachers.all() or user in class_.tas.all() or user == class_.headta ):
-                serializer.save()
+                assignment = serializer.save()
+                # add value=None grades for all students
+                for student in class_.students.all():
+                    assignment.assignment_grade.add(AssignmentGrade.objects.create(user_id=student, assignment_id=assignment, value=None))
+                # 
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             else:
                 return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)
@@ -43,7 +47,7 @@ class CreateAssignment(CreateAPIView):
 class AssignmentObject(RetrieveUpdateDestroyAPIView):
     queryset = Assignment.objects.all()
     serializer_class = AssignmentRetrieveSerializer
-    permission_classes=[OBJ__IsAssignmentClassTeacherOrTa] #chek here
+    permission_classes=[OBJ__IsAssignmentClassTeacherOrTa]
 
     def get_serializer_context(self):
         assignment_id = self.kwargs['pk']
@@ -54,7 +58,6 @@ class AssignmentObject(RetrieveUpdateDestroyAPIView):
             user == class_.headta):
             return {'user_id': self.request.user.id , 'is_student':False, 'class_id':class_.id, 'assignment_id': assignment_id }
         return {'user_id': self.request.user.id , 'is_student':True, 'class_id':class_.id, 'assignment_id': assignment_id }
-
 
 
 
@@ -79,6 +82,10 @@ class AddQuestion(GenericAPIView):
                 question = serializer.save()
                 question.assignment_id = assignment[0]
                 question.save()
+                # add value=None grades for all students
+                for student in class_.students.all():
+                    question.question_grade.add(Grade.objects.create(user_id=student, question_id=question, value=None, delay=None, final_grade=None))
+                # 
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)
