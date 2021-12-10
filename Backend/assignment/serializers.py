@@ -3,7 +3,7 @@ from .models import *
 from django.contrib.auth import get_user_model
 import django_filters.rest_framework
 from django.db.models import Avg, Max, Min
-from class_app.serializers import ClassPersonSerializer
+from class_app.serializers import StudentSerializer
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
 from class_app.models import ClassStudents
@@ -164,7 +164,7 @@ class GradeListSerializer(serializers.ListSerializer):
 
 
 class GradeSerializer(serializers.ModelSerializer):
-    user_id = ClassPersonSerializer()
+    user_id = StudentSerializer()
     class Meta:
         model = Grade
         list_serializer_class = GradeListSerializer
@@ -258,7 +258,7 @@ class AssignmentGradeListSerializer(serializers.ListSerializer):
 
 
 class AssignmentGradeSerializer(serializers.ModelSerializer):
-    user_id = ClassPersonSerializer()
+    user_id = StudentSerializer()
     class Meta:
         model = AssignmentGrade
         list_serializer_class = AssignmentGradeListSerializer

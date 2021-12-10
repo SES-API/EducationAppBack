@@ -16,24 +16,19 @@ class SemesterSerializer(serializers.ModelSerializer):
 
 
 
-class ClassStudentSerializer(serializers.ModelSerializer):
+class StudentSerializer(serializers.ModelSerializer):
     student_id = serializers.SerializerMethodField()
     class Meta:
-        ref_name = "Student"
         model = User_Model
         fields=['student_id','id','username','first_name','last_name','email','gender','profile_pic','birthdate','degree','university', 'is_hidden']
     def get_student_id(self,obj):
-        session=ClassStudents.objects.filter(student=obj)[0]
-        return session.studentid
+        session=ClassStudents.objects.filter(student=obj)
+        if(session):
+            session = session.first()
+            return session.studentid
+
 
 class ClassPersonSerializer(serializers.ModelSerializer):
-    # profile_link = serializers.SerializerMethodField('get_profile_link')
-
-    # def get_profile_link(self, model):
-    #     request = self.context.get("request")
-    #     base_url = request.build_absolute_uri('/').strip("/")
-    #     profile_link = base_url + "/account/profile/" + f"{model.id}"
-    #     return profile_link
 
     class Meta:  
         ref_name = "Members"
@@ -60,7 +55,7 @@ class ClassListSerializer(serializers.ModelSerializer):
             'headta' : {'read_only':True},
         }
 class ClassRetriveSerializer(serializers.ModelSerializer):
-    students=ClassStudentSerializer(many=True)
+    students=StudentSerializer(many=True)
     teachers=ClassPersonSerializer(many=True)
     tas=ClassPersonSerializer(many=True)
     headta=ClassPersonSerializer(many=False)
