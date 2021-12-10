@@ -48,8 +48,8 @@ def calculate_assignment_grades(assignment, student):
     for q in assignment.assignment_question.all():
         totalsum+=q.full_grade
         q_grade = q.question_grade.filter(user_id=student)
-        if(q_grade and q_grade[0].value):
-            valuesum+=q_grade[0].value
+        if(q_grade and q_grade.first().value):
+            valuesum+=q_grade.first().value
         else:
             has_asg_grade = False
     val=round( ((valuesum*100)/totalsum), 2)
@@ -57,13 +57,13 @@ def calculate_assignment_grades(assignment, student):
     if(has_asg_grade):
         assignment_grade = AssignmentGrade.objects.filter(assignment_id=assignment, user_id=student)
         if(assignment_grade):
-            assignment_grade= assignment_grade[0]
+            assignment_grade= assignment_grade.first()
             assignment_grade.value = val
             assignment_grade.save()
         else:
             AssignmentGrade.objects.create(assignment_id=assignment, user_id=student, value=val)
     else:
-        assignment_grade = AssignmentGrade.objects.filter(assignment_id=assignment, user_id=student)[0]
+        assignment_grade = AssignmentGrade.objects.filter(assignment_id=assignment, user_id=student).first()
         assignment_grade.value = None
         assignment_grade.save()
 
@@ -110,9 +110,9 @@ def student_num_changed(sender, **kwargs):
     for assignment in assignments:
         questions = Question.objects.filter(assignment_id = assignment)
         for question in questions:
-            Grade.objects.filter(user_id=user_id, question_id=question)[0].delete()
+            Grade.objects.filter(user_id=user_id, question_id=question).first().delete()
             count_graded_question(question)
-        AssignmentGrade.objects.filter(user_id=user_id, assignment_id=assignment)[0].delete()
+        AssignmentGrade.objects.filter(user_id=user_id, assignment_id=assignment).first().delete()
         count_graded_assignment(assignment)
 
 
@@ -208,7 +208,7 @@ class AddQuestionSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         assignment_id = self.context['assignment_id']
-        assignment = Assignment.objects.filter(id=assignment_id)[0]
+        assignment = Assignment.objects.filter(id=assignment_id).first()
         student_count = assignment.class_id.students.count()
         data['not_graded_count'] = student_count
         data['is_graded'] = True
@@ -276,8 +276,9 @@ class AssignmentRetrieveSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         for assignment in Assignment.objects.filter(class_id = self.context['class_id']):
-            if data.get('name') == assignment.name:
-                raise serializers.ValidationError(('There is another assignment with this name in this class.'))
+            if data.get('name') != self.instance.name:
+                if data.get('name') == assignment.name:
+                    raise serializers.ValidationError(('There is another assignment with this name in this class.'))
         return data
 
     def update(self, instance, validated_data):
@@ -285,35 +286,40 @@ class AssignmentRetrieveSerializer(serializers.ModelSerializer):
             instance.name = validated_data.get('name')
         if(validated_data.get('date')):
             instance.date = validated_data.get('date')
+        if(validated_data.get('weight')):
+            instance.weight = validated_data.get('weight')
         instance.save()
 
         questions = validated_data.get('assignment_question')
         question_names = set()
-        for q in questions:
-            if question_names.__contains__(q['name']):
-                raise serializers.ValidationError(('Questions of one assignment must have unique names.'))
-            question_names.add(q['name'])
+        if(questions):
+            for q in questions:
+                if(q.get('name')):
+                    if question_names.__contains__(q.get('name')):
+                        raise serializers.ValidationError(('Questions of one assignment must have unique names.'))
+                    question_names.add(q['name'])
 
-        for q in questions:
-            q_id = q.get('id', None)
-            if(q_id):
-                q_instance = instance.assignment_question.filter(id=q_id)[0]
-                q_name = q.get('name')
-                if(q_name and q_instance.name != q_name):
-                    q_instance.name = q_name
-                    q_instance.save()
-                q_full_grade = q.get('full_grade')
-                old_grade = q_instance.full_grade
-                if(q_full_grade and q_full_grade != old_grade):
-                    q_instance.full_grade = q_full_grade
-                    q_instance.save()
-                    for grade in Grade.objects.filter(question_id=q_id):
-                        val = round( grade.value * (q_full_grade/old_grade), 2)
-                        grade.value = val
-                        grade.final_grade = round((val*(1-grade.delay)), 2)
-                        grade.save()
-            else:
-                Question.objects.create(assignment_id = instance.id ,**q)
+            for q in questions:
+                q_id = q.get('id', None)
+                if(q_id):
+                    q_instance = instance.assignment_question.filter(id=q_id).first()
+                    q_name = q.get('name')
+                    if(q_name and q_instance.name != q_name):
+                        q_instance.name = q_name
+                        q_instance.save()
+                    q_full_grade = q.get('full_grade')
+                    old_grade = q_instance.full_grade
+                    if(q_full_grade and q_full_grade != old_grade):
+                        q_instance.full_grade = q_full_grade
+                        q_instance.save()
+                        for grade in Grade.objects.filter(question_id=q_id):
+                            if(grade.value):
+                                val = round( grade.value * (q_full_grade/old_grade), 2)
+                                grade.value = val
+                                grade.final_grade = round((val*(1-grade.delay)), 2)
+                                grade.save()
+                else:
+                    Question.objects.create(assignment_id = instance.id ,**q)
 
         return instance
 
@@ -346,7 +352,7 @@ class SetQuestionGrades(serializers.ModelSerializer):
         student = data['user_id']
         grade = Grade.objects.filter(question_id = question, user_id=student)
         if(grade):
-            grade = grade[0]
+            grade = grade.first()
             grade.value = data['value']
             grade.delay = data['delay']
             grade.final_grade = round((grade.value*(1-grade.delay)), 2)

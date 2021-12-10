@@ -51,7 +51,7 @@ class AssignmentObject(RetrieveUpdateDestroyAPIView):
 
     def get_serializer_context(self):
         assignment_id = self.kwargs['pk']
-        class_ = Assignment.objects.filter(id=assignment_id)[0].class_id
+        class_ = Assignment.objects.filter(id=assignment_id).first().class_id
         user = self.request.user
         if (user in class_.teachers.all() or
             user in class_.tas.all() or
@@ -75,12 +75,12 @@ class AddQuestion(GenericAPIView):
         assignment=Assignment.objects.filter(id=pk)
         if not assignment:
             return Response({'detail':'There is no assignment with this id'},status=status.HTTP_400_BAD_REQUEST)
-        class_ = assignment[0].class_id
+        class_ = assignment.first().class_id
         user=request.user
         if( user in class_.teachers.all() or user in class_.tas.all() or user == class_.headta ):
             if serializer.is_valid():
                 question = serializer.save()
-                question.assignment_id = assignment[0]
+                question.assignment_id = assignment.first()
                 question.save()
                 # add value=None grades for all students
                 for student in class_.students.all():
@@ -101,7 +101,7 @@ class QuestionObject(RetrieveUpdateDestroyAPIView):
 
     def get_serializer_context(self):
         question_id = self.kwargs['pk']
-        assignment_id = Question.objects.filter(id=question_id)[0].assignment_id
+        assignment_id = Question.objects.filter(id=question_id).first().assignment_id
         return {'assignment_id':assignment_id}
 
 
@@ -133,7 +133,7 @@ class AssignmentList(ListAPIView):
 
     def get_serializer_context(self):
         class_id = self.kwargs['pk']
-        class_ = Class.objects.filter(id=class_id)[0]
+        class_ = Class.objects.filter(id=class_id).first()
         user = self.request.user
         if (user in class_.teachers.all() or
             user in class_.tas.all() or
@@ -144,7 +144,7 @@ class AssignmentList(ListAPIView):
 
     def get_queryset(self):
         class_id = self.kwargs['pk']
-        class_ = Class.objects.filter(id=class_id)[0]
+        class_ = Class.objects.filter(id=class_id).first()
         user = self.request.user
         if (user in class_.teachers.all() or
             user in class_.tas.all() or
