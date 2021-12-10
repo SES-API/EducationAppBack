@@ -10,7 +10,7 @@ from .permissions import *
 from .models import *
 from .serializers import *
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import fields, status
 from django.db.models import Q
 from itertools import chain
 from rest_framework import filters
@@ -313,3 +313,26 @@ class HasPassword(GenericAPIView):
                 return Response({'haspassword':'True'},status=status.HTTP_200_OK)  
         else:
             return Response({'detail':'there is no class with this id'},status=status.HTTP_404_NOT_FOUND)
+
+
+
+
+class MyRole(GenericAPIView):
+    def get(self, request,pk):
+        user=request.user
+        class_=Class.objects.filter(id=pk)
+        if(class_):
+            class_=class_[0]
+            if(user in class_.students.all()):
+                return Response({'role':'student'},status=status.HTTP_200_OK)
+            elif(user in class_.teachers.all()):
+                return Response({'role':'teacher'},status=status.HTTP_200_OK)
+            elif(user in class_.tas.all()):
+                return Response({'role':'ta'},status=status.HTTP_200_OK)
+            elif(user==class_.headta):
+                return Response({'role':'headta'},status=status.HTTP_200_OK)
+            else:
+                return Response({'detail':'you are not in this class'},status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({'detail':'There is no Class with this id'},status=status.HTTP_404_NOT_FOUND)
+            

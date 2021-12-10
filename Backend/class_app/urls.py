@@ -28,6 +28,7 @@ urlpatterns = [
 
     path('haspassword/<int:pk>', HasPassword.as_view(), name='class_object'),
     
+    path('myrole/<int:pk>', MyRole.as_view(), name='myrole'),
     
     
     
