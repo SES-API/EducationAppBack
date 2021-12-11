@@ -48,8 +48,8 @@ def calculate_assignment_grades(assignment, student):
     for q in assignment.assignment_question.all():
         totalsum+=q.full_grade
         q_grade = q.question_grade.filter(user_id=student)
-        if(q_grade and q_grade.first().value):
-            valuesum+=q_grade.first().value
+        if(q_grade and q_grade.first().final_grade):
+            valuesum+=q_grade.first().final_grade
         else:
             has_asg_grade = False
     val=round( ((valuesum*100)/totalsum), 2)
@@ -66,6 +66,8 @@ def calculate_assignment_grades(assignment, student):
         assignment_grade = AssignmentGrade.objects.filter(assignment_id=assignment, user_id=student).first()
         assignment_grade.value = None
         assignment_grade.save()
+
+    calculate_class_grades(assignment.class_id, student)
 
 
 def calculate_assignment_properties(assignment):
@@ -87,6 +89,34 @@ def calculate_assignment_properties(assignment):
     assignment.save()
 
 
+def calculate_class_grades(class_, student):
+    has_cls_grade = True
+    val=0
+    valuesum=0
+    totalsum=0
+    for asg in class_.assignment_class.all():
+        totalsum+=asg.weight
+        asg_grade = asg.assignment_grade.filter(user_id=student)
+        if(asg_grade and asg_grade.first().value):
+            valuesum+=(asg_grade.first().value * asg.weight)
+        else:
+            has_cls_grade = False
+    val=round( (valuesum/totalsum), 2)
+
+    if(has_cls_grade):
+        cls_grade = ClassGrade.objects.filter(class_id=class_, user_id=student)
+        if(cls_grade):
+            cls_grade = cls_grade.first()
+            cls_grade.value = val
+            cls_grade.save()
+        else:
+            ClassGrade.objects.create(class_id=class_, user_id=student, value=val)
+    else:
+        cls_grade = ClassGrade.objects.filter(class_id=class_, user_id=student).first()
+        cls_grade.value = None
+        cls_grade.save()
+
+
 
 @receiver(post_save, sender=ClassStudents)
 def student_num_changed(sender, **kwargs):
@@ -100,6 +130,8 @@ def student_num_changed(sender, **kwargs):
             count_graded_question(question)
         AssignmentGrade.objects.create(user_id=user_id, assignment_id=assignment, value=None)
         count_graded_assignment(assignment)
+    ClassGrade.objects.create(user_id=user_id, class_id=class_, value=None)
+
 
 
 @receiver(post_delete, sender=ClassStudents)
@@ -114,6 +146,9 @@ def student_num_changed(sender, **kwargs):
             count_graded_question(question)
         AssignmentGrade.objects.filter(user_id=user_id, assignment_id=assignment).first().delete()
         count_graded_assignment(assignment)
+    cls_grade = ClassGrade.objects.filter(user_id=user_id, class_id=class_)
+    cls_grade.delete()
+    
 
 
 @receiver(post_delete, sender=Question)
@@ -386,3 +421,20 @@ class SetQuestionGrades(serializers.ModelSerializer):
             return data
         else:
             raise serializers.ValidationError(('You do not have permission to perform this action.'))
+
+
+
+class ClassGradeListSerializer(serializers.ListSerializer):
+    def to_representation(self, data):
+        if self.context.get('is_student') == True:
+            user_id = self.context.get('user_id')
+            data = data.filter(user_id=user_id)
+        return super(ClassGradeListSerializer, self).to_representation(data)
+
+
+class ClassGradeSerializer(serializers.ModelSerializer):
+    user_id = ClassPersonSerializer()
+    class Meta:
+        model = ClassGrade
+        list_serializer_class = ClassGradeListSerializer
+        fields=['value', 'user_id', 'class_id']

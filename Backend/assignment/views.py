@@ -32,7 +32,9 @@ class CreateAssignment(CreateAPIView):
                 assignment = serializer.save()
                 # add value=None grades for all students
                 for student in class_.students.all():
-                    assignment.assignment_grade.add(AssignmentGrade.objects.create(user_id=student, assignment_id=assignment, value=None))
+                    AssignmentGrade.objects.create(user_id=student, assignment_id=assignment, value=None)
+                    if ClassGrade.objects.filter(user_id=student, class_id=class_).first() == None:
+                        ClassGrade.objects.create(user_id=student, class_id=class_, value= None) 
                 # 
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             else:
@@ -84,7 +86,7 @@ class AddQuestion(GenericAPIView):
                 question.save()
                 # add value=None grades for all students
                 for student in class_.students.all():
-                    question.question_grade.add(Grade.objects.create(user_id=student, question_id=question, value=None, delay=None, final_grade=None))
+                    Grade.objects.create(user_id=student, question_id=question, value=None, delay=None, final_grade=None)
                 # 
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -151,4 +153,36 @@ class AssignmentList(ListAPIView):
             user in class_.students.all() or
             user == class_.headta):
             return Assignment.objects.filter(class_id=class_id)
+        return []
+
+
+
+
+# list of class grades
+@method_decorator(csrf_exempt, name='dispatch')
+class ClassGrades(ListAPIView):
+    filterset_fields = ['user_id']
+    serializer_class = ClassGradeSerializer
+    permission_classes=[IsAuthenticated]
+
+    def get_serializer_context(self):
+        class_id = self.kwargs['pk']
+        class_ = Class.objects.filter(id=class_id).first()
+        user = self.request.user
+        if (user in class_.teachers.all() or
+            user in class_.tas.all() or
+            user == class_.headta):
+            return {'user_id': self.request.user.id , 'is_student':False}
+        return {'user_id': self.request.user.id , 'is_student':True}
+        
+
+    def get_queryset(self):
+        class_id = self.kwargs['pk']
+        class_ = Class.objects.filter(id=class_id).first()
+        user = self.request.user
+        if (user in class_.teachers.all() or
+            user in class_.tas.all() or
+            user in class_.students.all() or
+            user == class_.headta):
+            return ClassGrade.objects.filter(class_id=class_id)
         return []
