@@ -23,4 +23,7 @@ urlpatterns = [
 
     # list of class assignment ( pk is class id )
     path('class/<int:pk>', AssignmentList.as_view(), name='assignments'),
+
+    # list of class grades ( pk is class id )
+    path('class/grades/<int:pk>', ClassGrades.as_view(), name='class_grades'),
 ]
