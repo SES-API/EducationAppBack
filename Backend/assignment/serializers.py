@@ -433,7 +433,7 @@ class ClassGradeListSerializer(serializers.ListSerializer):
 
 
 class ClassGradeSerializer(serializers.ModelSerializer):
-    user_id = ClassPersonSerializer()
+    user_id = StudentSerializer()
     class Meta:
         model = ClassGrade
         list_serializer_class = ClassGradeListSerializer
