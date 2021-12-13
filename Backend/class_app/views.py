@@ -229,6 +229,7 @@ class AddTeacherWithEmail(GenericAPIView):
 #-----------------------------------------------------------------------------------
 
 
+
 @method_decorator(csrf_exempt, name='dispatch')
 class JoinClass(GenericAPIView):
     serializer_class = JoinClassSerializer
@@ -236,6 +237,7 @@ class JoinClass(GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer=self.get_serializer(data=request.data)
         if serializer.is_valid():
+        # serializer.is_valid(raise_exception=True)
             class_=Class.objects.filter(id=serializer.validated_data['class_id'])[0]
             user=request.user
             if( user in class_.teachers.all() or user in class_.tas.all() or user in class_.students.all() ):
@@ -257,7 +259,13 @@ class JoinClass(GenericAPIView):
             student=ClassStudents(student=user,Class=class_,studentid=serializer.validated_data.get('student_id'))
             student.save()
             return Response({'detail':'done'},status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        response = {
+                'status': 'bad request',
+                'code': status.HTTP_400_BAD_REQUEST,
+                'message': serializer.errors['non_field_errors'][0],
+                'data': []
+            }
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
 
