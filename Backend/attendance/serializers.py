@@ -4,7 +4,12 @@ from django.db.models import fields
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import Session,atend
-from class_app.serializers import ClassPersonSerializer
+from class_app.serializers import StudentSerializer
+
+#for signals
+from class_app.models import ClassStudents
+from django.dispatch import receiver
+from django.db.models.signals import post_save
 
 User_Model=get_user_model()
 
@@ -25,7 +30,7 @@ User_Model=get_user_model()
 
 
 class StudentAtend(serializers.ModelSerializer):
-    students=ClassPersonSerializer()
+    student=StudentSerializer()
     class Meta:
         model = atend
         fields="__all__"
@@ -36,8 +41,8 @@ class SessionsSerializers(serializers.ModelSerializer):
     atends=StudentAtend(many=True,read_only=True)
     class Meta:
         model = Session
-        fields="__all__"
-        # exclude = [""]
+        # fields="__all__"
+        exclude = ["session_class"]
         extra_kwargs = {
             # '' : {'':},
         }
@@ -46,7 +51,7 @@ class MyAtendSerializers(serializers.ModelSerializer):
     session_name = serializers.SerializerMethodField()
     session_date = serializers.SerializerMethodField()
     session_id = serializers.SerializerMethodField()
-    students=ClassPersonSerializer()
+    student=StudentSerializer()
 
 
     class Meta:
@@ -87,7 +92,7 @@ class MyAtendSerializers(serializers.ModelSerializer):
 
 
 class SetSessionAtendsSerializers(serializers.ModelSerializer):
-    students=serializers.PrimaryKeyRelatedField(many=True,queryset=User_Model.objects.all())
+    student=serializers.PrimaryKeyRelatedField(many=True,queryset=User_Model.objects.all())
     session_id=serializers.IntegerField()
 
 
@@ -103,8 +108,21 @@ class SetSessionAtendsSerializers(serializers.ModelSerializer):
             atends=sesion.atends.all()
             ids=[]
             for item in atends:
-                ids.append(item.students)
-            for item in data["students"]:
+                ids.append(item.student)
+            for item in data["student"]:
                 if(item not in ids):
                     raise serializers.ValidationError(('There is no student with {} id in this session').format(item))
         return data
+
+
+
+
+@receiver(post_save, sender=ClassStudents)
+def add_to_sessions(sender, **kwargs):
+    class_ = kwargs['instance'].Class
+    user = kwargs['instance'].student
+    for session in class_.class_session.all():
+        atend_=atend(student=user,Present=None)
+        atend_.save()
+        session.atends.add(atend_)
+        session.save()
