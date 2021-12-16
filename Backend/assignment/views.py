@@ -153,8 +153,41 @@ class AssignmentList(ListAPIView):
             user in class_.students.all() or
             user == class_.headta):
             return Assignment.objects.filter(class_id=class_id)
-        return []
+        return Assignment.objects.none()
 
+
+
+
+# list of assignment grades
+@method_decorator(csrf_exempt, name='dispatch')
+class AssignmentGrades(ListAPIView):
+    filterset_fields = ['user_id']
+    serializer_class = AssignmentGradeSerializer
+    permission_classes=[IsAuthenticated]
+
+    def get_serializer_context(self):
+        assignment_id = self.kwargs['pk']
+        assignment = Assignment.objects.filter(id=assignment_id).first()
+        class_ = assignment.class_id
+        user = self.request.user
+        if (user in class_.teachers.all() or
+            user in class_.tas.all() or
+            user == class_.headta):
+            return {'user_id': self.request.user.id , 'is_student':False}
+        return {'user_id': self.request.user.id , 'is_student':True}
+        
+
+    def get_queryset(self):
+        assignment_id = self.kwargs['pk']
+        assignment = Assignment.objects.filter(id=assignment_id).first()
+        class_ = assignment.class_id
+        user = self.request.user
+        if (user in class_.teachers.all() or
+            user in class_.tas.all() or
+            user in class_.students.all() or
+            user == class_.headta):
+            return AssignmentGrade.objects.filter(assignment_id=assignment_id)
+        return AssignmentGrade.objects.none()
 
 
 
@@ -185,4 +218,4 @@ class ClassGrades(ListAPIView):
             user in class_.students.all() or
             user == class_.headta):
             return ClassGrade.objects.filter(class_id=class_id)
-        return []
+        return ClassGrade.objects.none()
