@@ -259,13 +259,17 @@ class JoinClass(GenericAPIView):
             student=ClassStudents(student=user,Class=class_,studentid=serializer.validated_data.get('student_id'))
             student.save()
             return Response({'detail':'done'},status=status.HTTP_200_OK)
-        response = {
-                'status': 'bad request',
-                'code': status.HTTP_400_BAD_REQUEST,
-                'message': serializer.errors['non_field_errors'][0],
-                'data': []
-            }
-        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        if( serializer.errors.get('non_field_errors')):
+            response = {
+                    'status': 'bad request',
+                    'code': status.HTTP_400_BAD_REQUEST,
+                    'message': serializer.errors['non_field_errors'][0],
+                    'data': []
+                }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 
