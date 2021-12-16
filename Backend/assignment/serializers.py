@@ -142,9 +142,13 @@ def student_num_changed(sender, **kwargs):
     for assignment in assignments:
         questions = Question.objects.filter(assignment_id = assignment)
         for question in questions:
-            Grade.objects.filter(user_id=user_id, question_id=question).first().delete()
+            grade = Grade.objects.filter(user_id=user_id, question_id=question).first()
+            if(grade):
+                grade.delete()
             count_graded_question(question)
-        AssignmentGrade.objects.filter(user_id=user_id, assignment_id=assignment).first().delete()
+        asg_grade = AssignmentGrade.objects.filter(user_id=user_id, assignment_id=assignment).first()
+        if(asg_grade):
+            asg_grade.delete()
         count_graded_assignment(assignment)
     cls_grade = ClassGrade.objects.filter(user_id=user_id, class_id=class_)
     cls_grade.delete()
@@ -351,7 +355,7 @@ class AssignmentRetrieveSerializer(serializers.ModelSerializer):
                             if(grade.value):
                                 val = round( grade.value * (q_full_grade/old_grade), 2)
                                 grade.value = val
-                                grade.final_grade = round((val*(1-grade.delay)), 2)
+                                grade.final_grade = round((val*grade.delay), 2)
                                 grade.save()
                 else:
                     Question.objects.create(assignment_id = instance.id ,**q)
@@ -375,7 +379,7 @@ class AssignmentRetrieveSerializer(serializers.ModelSerializer):
 
 class SetQuestionGrades(serializers.ModelSerializer):
     value = serializers.IntegerField(required=True)
-    delay = serializers.FloatField(required=True)
+    delay = serializers.FloatField(required=False, default=1)
     class Meta:
         model = Grade
         fields='__all__'
@@ -390,11 +394,11 @@ class SetQuestionGrades(serializers.ModelSerializer):
             grade = grade.first()
             grade.value = data['value']
             grade.delay = data['delay']
-            grade.final_grade = round((grade.value*(1-grade.delay)), 2)
+            grade.final_grade = round((grade.value*grade.delay), 2)
             grade.save()
         else:
             grade = Grade.objects.create(user_id=student, question_id=question, value=data['value'], delay=data['delay'])
-            grade.final_grade = round((grade.value*(1-grade.delay)), 2)
+            grade.final_grade = round((grade.value*grade.delay), 2)
             grade.save()
 
 
