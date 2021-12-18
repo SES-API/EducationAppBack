@@ -26,7 +26,7 @@ urlpatterns = [
     #semester list and create with srach base on semester
     path('semester/', SemesterList.as_view(), name='semester'),
 
-    path('haspassword/<int:pk>', HasPassword.as_view(), name='class_object'),
+    path('haspassword/<int:pk>', HasPassword.as_view(), name='haspassword'),
     
     path('myrole/<int:pk>', MyRole.as_view(), name='myrole'),
     
