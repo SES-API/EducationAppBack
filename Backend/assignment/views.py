@@ -47,11 +47,13 @@ class CreateAssignment(CreateAPIView):
 # get/update/delete an assignment
 @method_decorator(csrf_exempt, name='dispatch')
 class AssignmentObject(RetrieveUpdateDestroyAPIView):
+    
     queryset = Assignment.objects.all()
     serializer_class = AssignmentRetrieveSerializer
     permission_classes=[OBJ__IsAssignmentClassTeacherOrTa]
 
     def get_serializer_context(self):
+        print(self.request.data)
         assignment_id = self.kwargs['pk']
         class_ = Assignment.objects.filter(id=assignment_id).first().class_id
         user = self.request.user
