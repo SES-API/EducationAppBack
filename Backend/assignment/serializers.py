@@ -103,6 +103,11 @@ class CreateAssignmentSerializer(serializers.ModelSerializer):
             'is_graded' : {'read_only':True},
         }
 
+    def validate(self, data):
+        if(data.get('weight') == 0):
+            raise serializers.ValidationError(("Assignmnet's weight cannot be zero."))
+        return data
+
 
 class AssignmentGradeListSerializer(serializers.ListSerializer):
     def to_representation(self, data):
@@ -130,6 +135,9 @@ class AssignmentRetrieveSerializer(serializers.ModelSerializer):
         return context
 
     def validate(self, data):
+        if(data.get('weight') == 0):
+            raise serializers.ValidationError(("Assignmnet's weight cannot be zero."))
+
         for assignment in Assignment.objects.filter(class_id = self.context['class_id']):
             if data.get('name') != self.instance.name:
                 if data.get('name') == assignment.name:
@@ -158,6 +166,8 @@ class AssignmentRetrieveSerializer(serializers.ModelSerializer):
                 q_id = q.get('id', None)
                 if(q_id):
                     q_instance = instance.assignment_question.filter(id=q_id).first()
+                    if(q_instance == None):
+                        raise serializers.ValidationError((f'There is no question with id:{q_id} in this assignment'))
                     q_name = q.get('name')
                     if(q_name and q_instance.name != q_name):
                         q_instance.name = q_name
