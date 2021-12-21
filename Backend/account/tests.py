@@ -42,8 +42,7 @@ class NotLoggedInAccountTest(TestCase):
 class LoggedInAccountTest(TestCase):
 
     def setUp(self):
-        User.objects.create(username= "test_user", password= "Ab654321", email= "test_email@test.com")
-        self.user = User.objects.get(username="test_user")
+        self.user = User.objects.create(username= "test_user", password= "Ab654321", email= "test_email@test.com")
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
 
