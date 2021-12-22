@@ -138,10 +138,10 @@ class AssignmentRetrieveSerializer(serializers.ModelSerializer):
         if(data.get('weight') == 0):
             raise serializers.ValidationError(("Assignmnet's weight cannot be zero."))
 
-        for assignment in Assignment.objects.filter(class_id = self.context['class_id']):
-            if data.get('name') != self.instance.name:
-                if data.get('name') == assignment.name:
-                    raise serializers.ValidationError(('There is another assignment with this name in this class.'))
+        # for assignment in Assignment.objects.filter(class_id = self.context['class_id']):
+        #     if data.get('name') != self.instance.name:
+        #         if data.get('name') == assignment.name:
+        #             raise serializers.ValidationError(('There is another assignment with this name in this class.'))
         return data
 
     def update(self, instance, validated_data):

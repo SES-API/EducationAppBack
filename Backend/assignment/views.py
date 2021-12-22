@@ -53,7 +53,7 @@ class AssignmentObject(RetrieveUpdateDestroyAPIView):
     permission_classes=[OBJ__IsAssignmentClassTeacherOrTa]
 
     def get_serializer_context(self):
-        print(self.request.data)
+        # print(self.request.data)
         assignment_id = self.kwargs['pk']
         class_ = Assignment.objects.filter(id=assignment_id).first().class_id
         user = self.request.user

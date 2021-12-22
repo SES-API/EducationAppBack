@@ -20,8 +20,8 @@ class Assignment(models.Model):
     max_grade = models.FloatField(default=None, null=True)
     avg_grade = models.FloatField(default=None, null=True)
 
-    class Meta:
-        unique_together = ('name', 'class_id',)
+    # class Meta:
+    #     unique_together = ('name', 'class_id',)
 
 
 class Question(models.Model):
