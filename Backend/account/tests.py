@@ -27,15 +27,17 @@ class NotLoggedInAccountTest(TestCase):
 
 
     def test_api_reset_password(self):
+        user = User.objects.create(username="test_user", password="Ab654321", email="test_email@test.com")
+
         url = reverse("account:reset_password")
+
+        data =  {"new_password1" : "ABcd12345", "new_password2" : "ABcd12345", "email" : "test_email@test.com"}
+        response = self.client.put(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         data =  {"new_password1" : "Ab", "new_password2" : "654321", "email" : "test_email@test.com"}
         response = self.client.put(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-        # data =  {"new_password1" : "ABcd12345", "new_password2" : "ABcd12345", "email" : "test_email@test.com"}
-        # response = self.client.put(url, data, format="json")
-        # self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 
@@ -74,7 +76,8 @@ class LoggedInAccountTest(TestCase):
         response = self.client.put(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        # data =  {"new_password1" : "ABcd12345", "new_password2" : "ABcd12345", "old_password" : f"{self.user.password}"}
+
+        # data =  {"new_password1" : "ABcd1234", "new_password2" : "ABcd1234", "old_password" : f"{self.user.password}"}
         # response = self.client.put(url, data, format="json")
         # self.assertEqual(response.status_code, status.HTTP_200_OK)
 
