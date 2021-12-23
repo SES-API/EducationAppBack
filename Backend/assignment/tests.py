@@ -39,7 +39,7 @@ class AssignmentTest(TestCase):
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        data = {"name" : "test_assignment", "weight" : "3", "class_id" : f"{self.class_.id}"}
+        data = {"name" : "test_assignment", "weight" : "100", "class_id" : f"{self.class_.id}"}
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
