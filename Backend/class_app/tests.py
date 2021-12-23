@@ -1,13 +1,10 @@
 from typing import overload
-from django.test import TestCase
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
-from rest_framework.test import APIRequestFactory
 from rest_framework.test import APIClient
 from django.urls import reverse
 from rest_framework import status
 # Create your tests here.
-factory = APIRequestFactory()
 client = APIClient()
 
 
