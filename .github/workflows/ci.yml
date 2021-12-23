@@ -2,7 +2,10 @@ name: Django CI
 
 on:
   push:
+<<<<<<< HEAD
 
+=======
+>>>>>>> 7656a82d6b5467081c9c659ae62f2b88bb7dba47
     branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
@@ -29,5 +32,8 @@ jobs:
     - name: Run Tests
       run: |
         cd Backend
+<<<<<<< HEAD
 
+=======
+>>>>>>> 7656a82d6b5467081c9c659ae62f2b88bb7dba47
         python manage.py test
