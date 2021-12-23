@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = config('SECRET_KEY',default='a5ds16sa1f5as1d51a5sf135as1d5a1sf5a1sd5a1s561a4sf8as1f5asf6as1d65a1sd')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -173,12 +173,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL="account.User"
 
 #you can fill this in .env file
-EMAIL_BACKEND =config('EMAIL_BACKEND')
-EMAIL_HOST = config('EMAIL_HOST')
-EMAIL_USE_TLS = config('EMAIL_USE_TLS')
-EMAIL_PORT = config('EMAIL_PORT')
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_BACKEND =config('EMAIL_BACKEND',default='django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = config('EMAIL_HOST',default='smtp.gmail.com')
+EMAIL_USE_TLS = config('EMAIL_USE_TLS',default=True)
+EMAIL_PORT = config('EMAIL_PORT',default='587')
+EMAIL_HOST_USER = config('EMAIL_HOST_USER',default='example@example.com')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD',default='examplepassword')
 
 
 SWAGGER_SETTINGS = {
