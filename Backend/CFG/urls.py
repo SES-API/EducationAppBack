@@ -13,8 +13,11 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from os import replace
 from django.contrib import admin
 from django.urls import path,include,re_path
+from .views import download,files_list,UploadFile
+
 
 # statics:
 from django.conf.urls.static import static
@@ -24,6 +27,14 @@ from django.conf import settings
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+
+
+
+
+
+
+
+
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -64,6 +75,18 @@ urlpatterns = [
   
     # assignment app urls:
     path('assignment/',include('assignment.urls')),
+
+
+
+
+    re_path(r'^files_list$', files_list,name="files_list"),
+    re_path(r'^download/(?P<file_name>.+)$', download,name="download_file"),
+    path("upload_file/",UploadFile.as_view(),name="upload_file"),
+
+
+
+
+
 
 ]
 

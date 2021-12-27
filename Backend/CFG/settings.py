@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'assignment.apps.AssignmentConfig',
     #attendance
     'attendance.apps.AttendanceConfig',
+    'CFG',
 ]
 
 MIDDLEWARE = [
@@ -151,7 +152,7 @@ USE_TZ = True
 
 # media files (uploaded by users)
 MEDIA_ROOT = BASE_DIR / "media"
-MEDIA_URL = '/images/'
+MEDIA_URL = '/media/'
 # DEFAULT_FILE_STORAGE
 
 
