@@ -17,18 +17,12 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       - name: executing remote ssh commands using ssh key
-        uses: ./
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
-          script: |
-            cd sesapi
-            git pull origin develop
-            pip install -r requirements.txt
-            cd Backend
-            python3 manage.py migrate
-            cd ..
-            sudo systemctl restart gunicorn
-            sudo systemctl restart nginx
+        run: |
+         ssh -i ${{ secrets.KEY }} ${{ secrets.USERNAME }}@${{ secrets.HOST }}
+         cd sesapi
+         git pull origin develop
+         pip install -r requirements.txt
+         cd Backend
+         python3 manage.py migrate
+         sudo systemctl restart gunicorn
+         sudo systemctl restart nginx
