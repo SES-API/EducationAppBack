@@ -19,19 +19,19 @@ jobs:
       uses: garygrossgarten/github-action-ssh@release
       with:
         command: |
-         cd sesapi/
-         eval `ssh-agent` -s/
-         ssh-add ~/.ssh/id_ed25519_paw/
-         shah1234/
-         git pull origin develop/
-         pip install -r requirements.txt/
-         cd Backend/
-         python3 manage.py migrate/
-         sudo systemctl restart gunicorn/
-         sudo systemctl restart nginx/
+         cd sesapi
+         eval `ssh-agent` -s
+         ssh-add ~/.ssh/id_ed25519_paw
+         git pull origin develop
+         pip install -r requirements.txt
+         cd Backend
+         python3 manage.py migrate
+         sudo systemctl restart gunicorn
+         sudo systemctl restart nginx
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         privateKey: ${{ secrets.KEY}}
+        
         
       
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
