@@ -28,7 +28,7 @@ jobs:
          sudo systemctl restart nginx
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
-        privateKey: ${{ secrets.PRIVATE_KEY}}
+        privateKey: ${{ secrets.KEY}}
         
       
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
