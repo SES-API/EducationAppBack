@@ -20,9 +20,7 @@ jobs:
       with:
         command: |
          cd sesapi
-         eval `ssh-agent` -s
-         ssh-add ~/.ssh/id_ed25519_paw
-         git pull origin develop
+         git pull origin develop amirmahdishadman ${{ secrets.TOKEN }}
          pip install -r requirements.txt
          cd Backend
          python3 manage.py migrate
