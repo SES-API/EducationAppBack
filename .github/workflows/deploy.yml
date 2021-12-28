@@ -14,12 +14,21 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+    - uses: actions/checkout@v2
+    - name: Install SSH key
+      uses: shimataro/ssh-key-action@v2
+      with:
+        key: ${{ secrets.KEY }}
+        name: sesapi # optional
+        known_hosts: ${{ secrets.KNOWN_HOSTS }}
+        if_key_exists: fail
+        
+      
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-      - name: executing remote ssh commands using ssh key
-        run: |
-         ${{ secrets.KEY }}>>deployment_key.txt
-         ssh -i  deployment_key.txt ${{ secrets.USERNAME }}@${{ secrets.HOST }}
+
+    - name: executing remote ssh commands using ssh key
+      run: |
+         ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }}
          cd sesapi
          git pull origin develop
          pip install -r requirements.txt
