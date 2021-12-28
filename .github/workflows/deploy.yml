@@ -20,7 +20,7 @@ jobs:
       with:
         command: |
          cd sesapi
-         git pull origin develop amirmahdishadman ${{ secrets.TOKEN }}
+         git pull origin develop
          pip install -r requirements.txt
          cd Backend
          python3 manage.py migrate
