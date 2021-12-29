@@ -30,6 +30,20 @@ class GradeSerializer(serializers.ModelSerializer):
 class QuestionSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     question_grade=GradeSerializer(many=True, required=False)
+    is_graded = serializers.SerializerMethodField('get_is_graded')
+
+    def get_is_graded(self, question):
+        is_student = self.context.get('is_student')
+        if(is_student):
+            user_id = self.context.get('user_id')
+            question_grade = Grade.objects.filter(user_id=user_id, question_id=question)
+            if(question_grade):
+                question_grade = question_grade[0]
+                if (question_grade.value):
+                    return True
+            return False
+        else:
+            return question.is_graded
 
     def get_serializer_context(self):
         context={'user_id' : self.context.get('user_id'), 'is_student' : self.context.get('is_student')}
@@ -129,6 +143,20 @@ class AssignmentGradeSerializer(serializers.ModelSerializer):
 class AssignmentRetrieveSerializer(serializers.ModelSerializer):
     assignment_question=QuestionSerializer(many=True)
     assignment_grade=AssignmentGradeSerializer(many=True, read_only=True)
+    is_graded = serializers.SerializerMethodField('get_is_graded')
+
+    def get_is_graded(self, assignment):
+        is_student = self.context.get('is_student')
+        if(is_student):
+            user_id = self.context.get('user_id')
+            assginment_grade = AssignmentGrade.objects.filter(user_id=user_id, assignment_id=assignment)
+            if(assginment_grade):
+                assginment_grade = assginment_grade[0]
+                if (assginment_grade.value):
+                    return True
+            return False
+        else:
+            return assignment.is_graded
 
     def get_serializer_context(self):
         context={'user_id' : self.context.get('user_id'), 'is_student' : self.context.get('is_student')}
