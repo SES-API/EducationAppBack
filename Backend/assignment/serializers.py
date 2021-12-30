@@ -240,30 +240,31 @@ class SetQuestionGrades(serializers.ModelSerializer):
 
 
     def set_question_grade(self, data):
-        question=data['question_id']
-        assignment = question.assignment_id
-        student = data['user_id']
-        grade = Grade.objects.filter(question_id = question, user_id=student)
-        if(grade):
-            grade = grade.first()
-            if(grade.value != data['value'] or grade.delay != data['delay']):
-                grade.value = data['value']
-                grade.delay = data['delay']
+        if data['value'] != -1 :
+            question=data['question_id']
+            assignment = question.assignment_id
+            student = data['user_id']
+            grade = Grade.objects.filter(question_id = question, user_id=student)
+            if(grade):
+                grade = grade.first()
+                if(grade.value != data['value'] or grade.delay != data['delay']):
+                    grade.value = data['value']
+                    grade.delay = data['delay']
+                    grade.final_grade = round((grade.value*grade.delay), 2)
+                    grade.save()
+
+                    calculate_assignment_grades(assignment, student)
+                    calculate_class_grades(assignment.class_id, student)
+                    calculate_question_properties(question)
+                    calculate_assignment_properties(assignment)
+
+            else:
+                grade = Grade.objects.create(user_id=student, question_id=question, value=data['value'], delay=data['delay'])
                 grade.final_grade = round((grade.value*grade.delay), 2)
                 grade.save()
 
-                calculate_assignment_grades(assignment, student)
-                calculate_class_grades(assignment.class_id, student)
-                calculate_question_properties(question)
-                calculate_assignment_properties(assignment)
-
-        else:
-            grade = Grade.objects.create(user_id=student, question_id=question, value=data['value'], delay=data['delay'])
-            grade.final_grade = round((grade.value*grade.delay), 2)
-            grade.save()
-
-            count_graded_question(question)
-            count_graded_assignment(assignment)
+                count_graded_question(question)
+                count_graded_assignment(assignment)
 
 
 
@@ -272,8 +273,19 @@ class SetQuestionGrades(serializers.ModelSerializer):
         if not(question):
             raise serializers.ValidationError(('There is no question with this id.'))
         
-        if data.get('value') > question.full_grade:
-            raise serializers.ValidationError((f'Maximum grade for question {question.name} is {question.full_grade}'))
+        # if data.get('value') > question.full_grade:
+        #     raise serializers.ValidationError((f'Maximum grade for question {question.name} is {question.full_grade}'))
+        
+        if data.get('value') != -1 :
+            if data.get('value') > question.full_grade or data.get('value') < 0:
+                raise serializers.ValidationError((f'Grade for question {question.name} should be from 0 to {question.full_grade}'))
+
+        if data.get('delay') == -1 :
+            data['delay'] = 1
+
+        if data.get('delay') > 1 or data.get('delay') < 0:
+            raise serializers.ValidationError((f'Delay should be from 0 to 1'))
+
         
         assignment = question.assignment_id
         class_ = assignment.class_id
