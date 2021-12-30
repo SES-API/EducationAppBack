@@ -9,6 +9,8 @@ def count_graded_question(question):
     student_num = question.assignment_id.class_id.students.all().count()
     grades_num = Grade.objects.filter(question_id=question).exclude(value=None).count()
     not_graded = student_num - grades_num
+    if(not_graded<0):
+        not_graded = 0
     question.not_graded_count = not_graded
 
     if not_graded > 0:

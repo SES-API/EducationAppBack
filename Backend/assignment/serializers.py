@@ -232,7 +232,7 @@ class AssignmentRetrieveSerializer(serializers.ModelSerializer):
 
 
 class SetQuestionGrades(serializers.ModelSerializer):
-    value = serializers.IntegerField(required=True)
+    value = serializers.FloatField(required=True)
     delay = serializers.FloatField(required=False, default=1)
     class Meta:
         model = Grade
