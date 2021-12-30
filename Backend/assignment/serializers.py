@@ -246,14 +246,25 @@ class SetQuestionGrades(serializers.ModelSerializer):
         grade = Grade.objects.filter(question_id = question, user_id=student)
         if(grade):
             grade = grade.first()
-            grade.value = data['value']
-            grade.delay = data['delay']
-            grade.final_grade = round((grade.value*grade.delay), 2)
-            grade.save()
+            if(grade.value != data['value'] or grade.delay != data['delay']):
+                grade.value = data['value']
+                grade.delay = data['delay']
+                grade.final_grade = round((grade.value*grade.delay), 2)
+                grade.save()
+
+                calculate_assignment_grades(assignment, student)
+                calculate_class_grades(assignment.class_id, student)
+                calculate_question_properties(question)
+                calculate_assignment_properties(assignment)
+
         else:
             grade = Grade.objects.create(user_id=student, question_id=question, value=data['value'], delay=data['delay'])
             grade.final_grade = round((grade.value*grade.delay), 2)
             grade.save()
+
+            count_graded_question(question)
+            count_graded_assignment(assignment)
+
 
 
     def validate(self, data):
@@ -273,9 +284,15 @@ class SetQuestionGrades(serializers.ModelSerializer):
         
         if(self.context['user'] == class_.headta or self.context['user'] in class_.teachers.all() or self.context['user'] in class_.tas.all()):
             self.set_question_grade(data)
-            calculate_question_properties(question, data['user_id'])
-            count_graded_question(question)
-            count_graded_assignment(assignment)
+
+            # takes long
+            # calculate_assignment_grades(assignment, student)
+            # calculate_class_grades(class_, student)
+            # calculate_question_properties(question)
+            # calculate_assignment_properties(assignment)
+            # count_graded_question(question)
+            # count_graded_assignment(assignment)
+
             return data
         else:
             raise serializers.ValidationError(('You do not have permission to perform this action.'))

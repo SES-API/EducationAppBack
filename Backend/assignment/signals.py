@@ -63,8 +63,6 @@ def calculate_assignment_grades(assignment, student):
         assignment_grade.value = None
         assignment_grade.save()
 
-    calculate_class_grades(assignment.class_id, student)
-
 
 def calculate_assignment_properties(assignment):
     asg_min_grade = AssignmentGrade.objects.filter(assignment_id=assignment).aggregate(Min('value'))['value__min']
@@ -112,6 +110,28 @@ def calculate_class_grades(class_, student):
         cls_grade.value = None
         cls_grade.save()
 
+
+def calculate_question_properties(question):
+    q_min_grade = Grade.objects.filter(question_id=question).aggregate(Min('final_grade'))['final_grade__min']
+    if(q_min_grade):
+        question.min_grade = round(q_min_grade, 2)
+    else:
+        question.min_grade = None
+    q_max_grade = Grade.objects.filter(question_id=question).aggregate(Max('final_grade'))['final_grade__max']
+    if(q_max_grade):
+        question.max_grade = round(q_max_grade, 2)
+    else:
+        question.max_grade = None
+    q_avg_grade = Grade.objects.filter(question_id=question).aggregate(Avg('final_grade'))['final_grade__avg']
+    if(q_avg_grade):
+        question.avg_grade = round(q_avg_grade, 2)
+    else:
+        question.avg_grade = None
+    question.save()
+
+
+
+#-------------------------signals:
 
 
 @receiver(post_save, sender=ClassStudents)
@@ -161,31 +181,6 @@ def question_deleted(sender, **kwargs):
     students = assignment.class_id.students.all()
     for student in students:
         calculate_assignment_grades(assignment, student)
-
-    calculate_assignment_properties(assignment)
-
-
-
-def calculate_question_properties(question, student):
-    assignment = question.assignment_id
-
-    q_min_grade = Grade.objects.filter(question_id=question).aggregate(Min('final_grade'))['final_grade__min']
-    if(q_min_grade):
-        question.min_grade = round(q_min_grade, 2)
-    else:
-        question.min_grade = None
-    q_max_grade = Grade.objects.filter(question_id=question).aggregate(Max('final_grade'))['final_grade__max']
-    if(q_max_grade):
-        question.max_grade = round(q_max_grade, 2)
-    else:
-        question.max_grade = None
-    q_avg_grade = Grade.objects.filter(question_id=question).aggregate(Avg('final_grade'))['final_grade__avg']
-    if(q_avg_grade):
-        question.avg_grade = round(q_avg_grade, 2)
-    else:
-        question.avg_grade = None
-    question.save()
-
-    calculate_assignment_grades(assignment, student)
+        calculate_class_grades(assignment.class_id, student)
 
     calculate_assignment_properties(assignment)
