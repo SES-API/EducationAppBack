@@ -7,6 +7,7 @@ from rest_framework.generics import GenericAPIView, ListAPIView, CreateAPIView, 
 from rest_framework.permissions import AllowAny,IsAuthenticated,IsAuthenticatedOrReadOnly
 from .models import Assignment, Question
 from .serializers import *
+from .signals import calculate_assignment_properties, count_graded_assignment
 from .permissions import OBJ__IsAssignmentClassTeacherOrTa, OBJ__IsQuestionClassTeacherOrTa
 from rest_framework.response import Response
 from rest_framework import status
@@ -122,6 +123,10 @@ class GradeQuestion(GenericAPIView):
     def post(self,request):
         serializer=self.get_serializer(data=request.data, many=True)
         if(serializer.is_valid()):
+            question_id = (serializer.data[0]['question_id'])
+            assignment = Question.objects.get(id=question_id).assignment_id
+            calculate_assignment_properties(assignment)
+            count_graded_assignment(assignment)
             return Response({'detail':'done'},status=status.HTTP_200_OK)          
         else:
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)

@@ -254,9 +254,9 @@ class SetQuestionGrades(serializers.ModelSerializer):
                     grade.save()
 
                     calculate_assignment_grades(assignment, student)
-                    calculate_class_grades(assignment.class_id, student)
+                    # calculate_class_grades(assignment.class_id, student)
                     calculate_question_properties(question)
-                    calculate_assignment_properties(assignment)
+                    # calculate_assignment_properties(assignment)
 
             else:
                 grade = Grade.objects.create(user_id=student, question_id=question, value=data['value'], delay=data['delay'])
@@ -264,7 +264,7 @@ class SetQuestionGrades(serializers.ModelSerializer):
                 grade.save()
 
                 count_graded_question(question)
-                count_graded_assignment(assignment)
+                # count_graded_assignment(assignment)
 
 
 
