@@ -88,13 +88,13 @@ class AddQuestionSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(('There is another question with this name in this assignment.'))
         assignment.is_graded = False
         assignment.not_graded_count += 1
-        assignment_grades = AssignmentGrade.objects.filter(assignment_id=assignment)
-        for asg_grade in assignment_grades:
-            asg_grade.value = None
-            asg_grade.save()
-        assignment.min_grade = None
-        assignment.max_grade = None
-        assignment.avg_grade = None
+        # assignment_grades = AssignmentGrade.objects.filter(assignment_id=assignment)
+        # for asg_grade in assignment_grades:
+        #     asg_grade.value = None
+        #     asg_grade.save()
+        # assignment.min_grade = None
+        # assignment.max_grade = None
+        # assignment.avg_grade = None
         assignment.save()
         return data
 
