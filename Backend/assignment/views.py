@@ -66,9 +66,16 @@ class AssignmentObject(RetrieveUpdateDestroyAPIView):
         return {'user_id': self.request.user.id , 'is_student':True, 'class_id':class_.id, 'assignment_id': assignment_id }
 
     def delete(self, request, *args, **kwargs):
-        assignment = get_object_or_404(Assignment, id=kwargs['pk'])
-        assignment.delete()
-        return Response({'detail':'assignment deleted'}, status=status.HTTP_204_NO_CONTENT)
+        assignment_id = self.kwargs['pk']
+        class_ = Assignment.objects.filter(id=assignment_id).first().class_id
+        user = self.request.user
+        if (user in class_.teachers.all() or
+            user in class_.tas.all() or
+            user == class_.headta):
+            assignment = get_object_or_404(Assignment, id=kwargs['pk'])
+            assignment.delete()
+            return Response({'detail':'assignment deleted'}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'detail':'You do not have permission to perform this action.'},status=status.HTTP_403_FORBIDDEN)
 
 
 # add aquestion to an assignment
