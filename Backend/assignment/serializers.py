@@ -258,6 +258,8 @@ class SetQuestionGrades(serializers.ModelSerializer):
                     calculate_question_properties(question)
                     # calculate_assignment_properties(assignment)
 
+                    count_graded_question(question)
+
             else:
                 grade = Grade.objects.create(user_id=student, question_id=question, value=data['value'], delay=data['delay'])
                 grade.final_grade = round((grade.value*grade.delay), 2)
