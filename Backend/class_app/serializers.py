@@ -145,6 +145,27 @@ class SetTaSerializer(serializers.Serializer):
         if(ta[0] not in class_[0].students.all() and ta[0] != class_[0].headta and ta[0] not in class_[0].teachers.all()):
             raise serializers.ValidationError(('There is no User(ta) with this id in class'))
         return data
+
+
+class SetStudentSerializer(serializers.Serializer):
+    student_id = serializers.IntegerField(required=True)
+    class_id=serializers.IntegerField(required=True)
+
+    def validate(self, data):
+        class_=Class.objects.filter(id=data.get("class_id"))
+        student=User_Model.objects.filter(id=data.get("student_id"))
+        if not(class_):
+            raise serializers.ValidationError(('There is no Class with this id'))
+    
+        if not(student):
+            raise serializers.ValidationError(('There is no User(student) with this id'))
+        if(student[0] in class_[0].students.all()):
+            raise serializers.ValidationError(('This User Already is Student'))
+        if(student[0] not in class_[0].tas.all() and student[0] != class_[0].headta and student[0] not in class_[0].teachers.all()):
+            raise serializers.ValidationError(('There is no User(student) with this id in class'))
+        if(student[0] in class_[0].teachers.all()):
+            raise serializers.ValidationError(('A teacher cannot be a student'))
+        return data
 #-----------------------------------------------------------------------------------
 class SetHeadTaWithEmailSerializer(serializers.Serializer):
     headta_email = serializers.EmailField(required=True)

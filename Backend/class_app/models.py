@@ -53,3 +53,7 @@ class ClassStudents(models.Model):
         unique_together = ('studentid', 'Class',)
 
 
+class ClassTa(models.Model):
+    Ta = models.ForeignKey(UserModel, on_delete=models.CASCADE)
+    Class = models.ForeignKey(Class, on_delete=models.CASCADE)
+    studentid=models.CharField(max_length = 10,validators=[MinValueValidator(6), MaxValueValidator(10)])

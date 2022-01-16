@@ -12,6 +12,7 @@ urlpatterns = [
     path('set_teacher/', SetTeacher.as_view(), name='set_teacher'),
     path('set_headta/', SetHeadTa.as_view(), name='set_headta'),
     path('set_ta/', SetTa.as_view(), name='set_ta'),
+    path('set_student/', SetStudent.as_view(), name='set_student'),
 
     path('set_headta_email/', SetHeadTaWithEmail.as_view(), name='set_headta_email'),
     path('add_ta_email/', AddTaWithEmail.as_view(), name='add_ta_email'),
