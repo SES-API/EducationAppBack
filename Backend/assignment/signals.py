@@ -176,14 +176,15 @@ def student_num_changed(sender, **kwargs):
     
 
 
-@receiver(post_delete, sender=Question)
-def question_deleted(sender, **kwargs):
-    question = kwargs['instance']
-    assignment = question.assignment_id
-    count_graded_assignment(assignment)
-    students = assignment.class_id.students.all()
-    for student in students:
-        calculate_assignment_grades(assignment, student)
-        # calculate_class_grades(assignment.class_id, student)
+# @receiver(post_delete, sender=Question)
+# def question_deleted(sender, **kwargs):
+#     question = kwargs['instance']
+#     assignment = question.assignment_id
+#     if(assignment):
+#         count_graded_assignment(assignment)
+#         students = assignment.class_id.students.all()
+#         for student in students:
+#             calculate_assignment_grades(assignment, student)
+#             # calculate_class_grades(assignment.class_id, student)
 
-    calculate_assignment_properties(assignment)
+#         calculate_assignment_properties(assignment)
