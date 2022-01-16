@@ -12,6 +12,7 @@ from .permissions import OBJ__IsAssignmentClassTeacherOrTa, OBJ__IsQuestionClass
 from rest_framework.response import Response
 from rest_framework import status
 from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
 
 
 User_Model=get_user_model()
@@ -64,6 +65,10 @@ class AssignmentObject(RetrieveUpdateDestroyAPIView):
             return {'user_id': self.request.user.id , 'is_student':False, 'class_id':class_.id, 'assignment_id': assignment_id }
         return {'user_id': self.request.user.id , 'is_student':True, 'class_id':class_.id, 'assignment_id': assignment_id }
 
+    def delete(self, request, *args, **kwargs):
+        assignment = get_object_or_404(Assignment, id=kwargs['pk'])
+        assignment.delete()
+        return Response({'detail':'assignment deleted'}, status=status.HTTP_204_NO_CONTENT)
 
 
 # add aquestion to an assignment
