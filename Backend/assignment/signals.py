@@ -43,7 +43,7 @@ def calculate_assignment_grades(assignment, student):
     totalsum=0
     for q in assignment.assignment_question.all():
         q_grade = q.question_grade.filter(user_id=student)
-        if(q_grade and q_grade.first().final_grade):
+        if(q_grade!=None and q_grade.first().final_grade!=None):
             valuesum+=q_grade.first().final_grade
             totalsum+=q.full_grade
         # else:
@@ -55,7 +55,7 @@ def calculate_assignment_grades(assignment, student):
 
     if(has_asg_grade):
         assignment_grade = AssignmentGrade.objects.filter(assignment_id=assignment, user_id=student)
-        if(assignment_grade):
+        if(assignment_grade!=None):
             assignment_grade= assignment_grade.first()
             assignment_grade.value = val
             assignment_grade.save()
@@ -69,68 +69,68 @@ def calculate_assignment_grades(assignment, student):
 
 def calculate_assignment_properties(assignment):
     asg_min_grade = AssignmentGrade.objects.filter(assignment_id=assignment).exclude(value=None).aggregate(Min('value'))['value__min']
-    if(asg_min_grade):
+    if(asg_min_grade!=None):
         assignment.min_grade = round(asg_min_grade, 2)
     else:
         assignment.min_grade = None
     asg_max_grade = AssignmentGrade.objects.filter(assignment_id=assignment).exclude(value=None).aggregate(Max('value'))['value__max']
-    if(asg_max_grade):
+    if(asg_max_grade!=None):
         assignment.max_grade = round(asg_max_grade, 2)
     else:
         assignment.max_grade = None
     asg_avg_grade = AssignmentGrade.objects.filter(assignment_id=assignment).exclude(value=None).aggregate(Avg('value'))['value__avg']
-    if(asg_avg_grade):
+    if(asg_avg_grade!=None):
         assignment.avg_grade = round(asg_avg_grade, 2)
     else:
         assignment.avg_grade = None
     assignment.save()
 
 
-def calculate_class_grades(class_, student):
-    has_cls_grade = True
-    val=0
-    valuesum=0
-    totalsum=0
-    for asg in class_.assignment_class.all():
-        totalsum+=asg.weight
-        asg_grade = asg.assignment_grade.filter(user_id=student)
-        if(asg_grade and asg_grade.first().value):
-            valuesum+=(asg_grade.first().value * asg.weight)
-        else:
-            has_cls_grade = False
-    val=round( (valuesum/totalsum), 2)
+# def calculate_class_grades(class_, student):
+#     has_cls_grade = True
+#     val=0
+#     valuesum=0
+#     totalsum=0
+#     for asg in class_.assignment_class.all():
+#         totalsum+=asg.weight
+#         asg_grade = asg.assignment_grade.filter(user_id=student)
+#         if(asg_grade and asg_grade.first().value):
+#             valuesum+=(asg_grade.first().value * asg.weight)
+#         else:
+#             has_cls_grade = False
+#     val=round( (valuesum/totalsum), 2)
 
-    if(has_cls_grade):
-        cls_grade = ClassGrade.objects.filter(class_id=class_, user_id=student)
-        if(cls_grade):
-            cls_grade = cls_grade.first()
-            cls_grade.value = val
-            cls_grade.save()
-        else:
-            ClassGrade.objects.create(class_id=class_, user_id=student, value=val)
-    else:
-        cls_grade = ClassGrade.objects.filter(class_id=class_, user_id=student).first()
-        cls_grade.value = None
-        cls_grade.save()
+#     if(has_cls_grade):
+#         cls_grade = ClassGrade.objects.filter(class_id=class_, user_id=student)
+#         if(cls_grade):
+#             cls_grade = cls_grade.first()
+#             cls_grade.value = val
+#             cls_grade.save()
+#         else:
+#             ClassGrade.objects.create(class_id=class_, user_id=student, value=val)
+#     else:
+#         cls_grade = ClassGrade.objects.filter(class_id=class_, user_id=student).first()
+#         cls_grade.value = None
+#         cls_grade.save()
 
 
-def calculate_question_properties(question):
-    q_min_grade = Grade.objects.filter(question_id=question).exclude(final_grade=None).aggregate(Min('final_grade'))['final_grade__min']
-    if(q_min_grade):
-        question.min_grade = round(q_min_grade, 2)
-    else:
-        question.min_grade = None
-    q_max_grade = Grade.objects.filter(question_id=question).exclude(final_grade=None).aggregate(Max('final_grade'))['final_grade__max']
-    if(q_max_grade):
-        question.max_grade = round(q_max_grade, 2)
-    else:
-        question.max_grade = None
-    q_avg_grade = Grade.objects.filter(question_id=question).exclude(final_grade=None).aggregate(Avg('final_grade'))['final_grade__avg']
-    if(q_avg_grade):
-        question.avg_grade = round(q_avg_grade, 2)
-    else:
-        question.avg_grade = None
-    question.save()
+# def calculate_question_properties(question):
+#     q_min_grade = Grade.objects.filter(question_id=question).exclude(final_grade=None).aggregate(Min('final_grade'))['final_grade__min']
+#     if(q_min_grade!=None):
+#         question.min_grade = round(q_min_grade, 2)
+#     else:
+#         question.min_grade = None
+#     q_max_grade = Grade.objects.filter(question_id=question).exclude(final_grade=None).aggregate(Max('final_grade'))['final_grade__max']
+#     if(q_max_grade!=None):
+#         question.max_grade = round(q_max_grade, 2)
+#     else:
+#         question.max_grade = None
+#     q_avg_grade = Grade.objects.filter(question_id=question).exclude(final_grade=None).aggregate(Avg('final_grade'))['final_grade__avg']
+#     if(q_avg_grade!=None):
+#         question.avg_grade = round(q_avg_grade, 2)
+#     else:
+#         question.avg_grade = None
+#     question.save()
 
 
 
@@ -148,10 +148,12 @@ def student_num_changed(sender, **kwargs):
             Grade.objects.create(user_id=user_id, question_id=question, value=None, delay=None, final_grade=None)
             question.not_graded_count += 1
             question.is_graded = False
+            question.save()
         AssignmentGrade.objects.create(user_id=user_id, assignment_id=assignment, value=None)
         assignment.not_graded_count = assignment.assignment_question.all().count()
         assignment.is_graded = False
-    ClassGrade.objects.create(user_id=user_id, class_id=class_, value=None)
+        assignment.save()
+    # ClassGrade.objects.create(user_id=user_id, class_id=class_, value=None)
 
 
 
@@ -164,15 +166,17 @@ def student_num_changed(sender, **kwargs):
         questions = Question.objects.filter(assignment_id = assignment)
         for question in questions:
             grade = Grade.objects.filter(user_id=user_id, question_id=question).first()
-            if(grade):
+            if(grade!=None):
                 grade.delete()
             count_graded_question(question)
+            # calculate_question_properties(question)
         asg_grade = AssignmentGrade.objects.filter(user_id=user_id, assignment_id=assignment).first()
-        if(asg_grade):
+        if(asg_grade!=None):
             asg_grade.delete()
         count_graded_assignment(assignment)
-    cls_grade = ClassGrade.objects.filter(user_id=user_id, class_id=class_)
-    cls_grade.delete()
+        calculate_assignment_properties(assignment)
+    # cls_grade = ClassGrade.objects.filter(user_id=user_id, class_id=class_)
+    # cls_grade.delete()
     
 
 
