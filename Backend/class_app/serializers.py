@@ -22,7 +22,10 @@ class StudentSerializer(serializers.ModelSerializer):
         model = User_Model
         fields=['student_id','id','username','first_name','last_name','email','gender','profile_pic','birthdate','degree','university', 'is_hidden']
     def get_student_id(self,obj):
-        session=ClassStudents.objects.filter(student=obj)
+        # pk=self.context.get('request').parser_context.get('kwargs').get('pk')
+        # class_=Class.objects.filter(id=pk).first()
+        print(self.context)
+        session=ClassStudents.objects.filter(student=obj,Class=self.context['class_id'])
         if(session):
             session = session.first()
             return session.studentid
@@ -83,6 +86,10 @@ class ClassRetriveSerializer(serializers.ModelSerializer):
         else:
             data['has_password'] = False
         return data
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # We pass the "upper serializer" context to the "nested one"
+        self.fields['students'].context.update(self.context)
             
 
 

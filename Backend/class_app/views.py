@@ -40,6 +40,10 @@ class ClassObject(RetrieveUpdateDestroyAPIView):
     queryset = Class.objects.all()
     serializer_class = ClassRetriveSerializer
     permission_classes=[OBJ__IsClassOwnerORTeacherORTaOrStudentReadOnly]
+    def get_serializer_context(self):
+        context = super(ClassObject, self).get_serializer_context()
+        context.update({"class_id": self.request.parser_context.get('kwargs').get('pk')})
+        return context
 
 
 class ClassStudentsListForTeacherOrTa(GenericAPIView):
