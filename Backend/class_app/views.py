@@ -119,7 +119,7 @@ class SetHeadTa(GenericAPIView):
 
                     class_.headta=headta
                     if(headta in  class_.students.all()):
-                        student=ClassStudents.objects.get(student=headta,Class=class_)
+                        student=ClassStudents.objects.filter(student=headta,Class=class_).first()
                         object=ClassTa(Ta=headta,Class=class_,studentid=student.studentid)
                         object.save()
                         class_.students.remove(headta)
@@ -151,7 +151,7 @@ class SetTa(GenericAPIView):
 
             elif((request.user == class_.owner or request.user == class_.headta or request.user in class_.teachers.all()) and class_.headta != ta):
                 class_.tas.add(ta)
-                student=ClassStudents.objects.get(student=ta,Class=class_).first()
+                student=ClassStudents.objects.filter(student=ta,Class=class_).first()
                 object=ClassTa(Ta=ta,Class=class_,studentid=student.studentid)
                 object.save()
                 class_.students.remove(ta)
@@ -180,13 +180,13 @@ class SetStudent(GenericAPIView):
 
 
             if((request.user == class_.owner or request.user == class_.headta or request.user in class_.teachers.all()) and class_.headta != student):
-                last=ClassTa.objects.get(Ta=student,Class=class_).first()
+                last=ClassTa.objects.filter(Ta=student,Class=class_).first()
                 std=ClassStudents(student=student,Class=class_,studentid=last.studentid)
                 std.save()
                 class_.tas.remove(student)
                 class_.save()
             elif(request.user in class_.teachers.all() and class_.headta==student):
-                last=ClassTa.objects.get(Ta=student,Class=class_).first()
+                last=ClassTa.objects.filter(Ta=student,Class=class_).first()
                 std=ClassStudents(student=student,Class=class_,studentid=last.studentid)
                 std.save()
                 class_.headta=None
