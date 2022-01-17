@@ -57,12 +57,13 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields=['id','name', 'full_grade', 'not_graded_count', 'is_graded','question_grade', 'avg_grade', 'min_grade', 'max_grade']
+        fields=['id','name', 'full_grade', 'not_graded_count', 'is_graded','question_grade']
+        # , 'avg_grade', 'min_grade', 'max_grade'
         extra_kwargs = {
             'assignment_id' : {'read_only':True},
-            'avg_grade' : {'read_only':True},
-            'min_grade' : {'read_only':True},
-            'max_grade' : {'read_only':True},
+            # 'avg_grade' : {'read_only':True},
+            # 'min_grade' : {'read_only':True},
+            # 'max_grade' : {'read_only':True},
             'question_grade' : {'read_only':True},
             'not_graded_count' : {'read_only':True},
             'is_graded' : {'read_only':True},
@@ -252,22 +253,14 @@ class SetQuestionGrades(serializers.ModelSerializer):
                     grade.delay = data['delay']
                     grade.final_grade = round((grade.value*grade.delay), 2)
                     grade.save()
-
-                    calculate_assignment_grades(assignment, student)
-                    # calculate_class_grades(assignment.class_id, student)
-                    calculate_question_properties(question)
-                    # calculate_assignment_properties(assignment)
-
-                    count_graded_question(question)
-
             else:
                 grade = Grade.objects.create(user_id=student, question_id=question, value=data['value'], delay=data['delay'])
                 grade.final_grade = round((grade.value*grade.delay), 2)
                 grade.save()
 
-                count_graded_question(question)
-                # count_graded_assignment(assignment)
-
+            calculate_assignment_grades(assignment, student)
+            # calculate_question_properties(question)
+            count_graded_question(question)
 
 
     def validate(self, data):
@@ -298,32 +291,23 @@ class SetQuestionGrades(serializers.ModelSerializer):
         
         if(self.context['user'] == class_.headta or self.context['user'] in class_.teachers.all() or self.context['user'] in class_.tas.all()):
             self.set_question_grade(data)
-
-            # takes long
-            # calculate_assignment_grades(assignment, student)
-            # calculate_class_grades(class_, student)
-            # calculate_question_properties(question)
-            # calculate_assignment_properties(assignment)
-            # count_graded_question(question)
-            # count_graded_assignment(assignment)
-
             return data
         else:
             raise serializers.ValidationError(('You do not have permission to perform this action.'))
 
 
 
-class ClassGradeListSerializer(serializers.ListSerializer):
-    def to_representation(self, data):
-        if self.context.get('is_student') == True:
-            user_id = self.context.get('user_id')
-            data = data.filter(user_id=user_id)
-        return super(ClassGradeListSerializer, self).to_representation(data)
+# class ClassGradeListSerializer(serializers.ListSerializer):
+#     def to_representation(self, data):
+#         if self.context.get('is_student') == True:
+#             user_id = self.context.get('user_id')
+#             data = data.filter(user_id=user_id)
+#         return super(ClassGradeListSerializer, self).to_representation(data)
 
 
-class ClassGradeSerializer(serializers.ModelSerializer):
-    user_id = StudentSerializer()
-    class Meta:
-        model = ClassGrade
-        list_serializer_class = ClassGradeListSerializer
-        fields=['value', 'user_id', 'class_id']
+# class ClassGradeSerializer(serializers.ModelSerializer):
+#     user_id = StudentSerializer()
+#     class Meta:
+#         model = ClassGrade
+#         list_serializer_class = ClassGradeListSerializer
+#         fields=['value', 'user_id', 'class_id']

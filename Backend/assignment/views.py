@@ -33,10 +33,10 @@ class CreateAssignment(CreateAPIView):
             if( user in class_.teachers.all() or user in class_.tas.all() or user == class_.headta ):
                 assignment = serializer.save()
                 # add value=None grades for all students
-                for student in class_.students.all():
-                    AssignmentGrade.objects.create(user_id=student, assignment_id=assignment, value=None)
-                    if ClassGrade.objects.filter(user_id=student, class_id=class_).first() == None:
-                        ClassGrade.objects.create(user_id=student, class_id=class_, value= None) 
+                # for student in class_.students.all():
+                #     AssignmentGrade.objects.create(user_id=student, assignment_id=assignment, value=None)
+                #     if ClassGrade.objects.filter(user_id=student, class_id=class_).first() == None:
+                #         ClassGrade.objects.create(user_id=student, class_id=class_, value= None) 
                 # 
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             else:
@@ -146,8 +146,8 @@ class GradeQuestion(GenericAPIView):
         if(serializer.is_valid()):
             question_id = (serializer.data[0]['question_id'])
             assignment = Question.objects.get(id=question_id).assignment_id
-            calculate_assignment_properties(assignment)
             count_graded_assignment(assignment)
+            calculate_assignment_properties(assignment)
             return Response({'detail':'done'},status=status.HTTP_200_OK)          
         else:
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
@@ -220,30 +220,30 @@ class AssignmentGrades(ListAPIView):
 
 
 # list of class grades
-@method_decorator(csrf_exempt, name='dispatch')
-class ClassGrades(ListAPIView):
-    filterset_fields = ['user_id']
-    serializer_class = ClassGradeSerializer
-    permission_classes=[IsAuthenticated]
+# @method_decorator(csrf_exempt, name='dispatch')
+# class ClassGrades(ListAPIView):
+#     filterset_fields = ['user_id']
+#     serializer_class = ClassGradeSerializer
+#     permission_classes=[IsAuthenticated]
 
-    def get_serializer_context(self):
-        class_id = self.kwargs['pk']
-        class_ = Class.objects.filter(id=class_id).first()
-        user = self.request.user
-        if (user in class_.teachers.all() or
-            user in class_.tas.all() or
-            user == class_.headta):
-            return {'user_id': self.request.user.id , 'is_student':False}
-        return {'user_id': self.request.user.id , 'is_student':True}
+#     def get_serializer_context(self):
+#         class_id = self.kwargs['pk']
+#         class_ = Class.objects.filter(id=class_id).first()
+#         user = self.request.user
+#         if (user in class_.teachers.all() or
+#             user in class_.tas.all() or
+#             user == class_.headta):
+#             return {'user_id': self.request.user.id , 'is_student':False}
+#         return {'user_id': self.request.user.id , 'is_student':True}
         
 
-    def get_queryset(self):
-        class_id = self.kwargs['pk']
-        class_ = Class.objects.filter(id=class_id).first()
-        user = self.request.user
-        if (user in class_.teachers.all() or
-            user in class_.tas.all() or
-            user in class_.students.all() or
-            user == class_.headta):
-            return ClassGrade.objects.filter(class_id=class_id)
-        return ClassGrade.objects.none()
+#     def get_queryset(self):
+#         class_id = self.kwargs['pk']
+#         class_ = Class.objects.filter(id=class_id).first()
+#         user = self.request.user
+#         if (user in class_.teachers.all() or
+#             user in class_.tas.all() or
+#             user in class_.students.all() or
+#             user == class_.headta):
+#             return ClassGrade.objects.filter(class_id=class_id)
+#         return ClassGrade.objects.none()
