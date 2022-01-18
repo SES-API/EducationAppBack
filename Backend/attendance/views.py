@@ -109,7 +109,7 @@ class UserAtendsForClass(GenericAPIView):
     serializer_class = MyAtendSerializers
     def get_serializer_context(self):
         class_=Class.objects.filter(id=self.kwargs['pk'])
-        context = super(SessionsOfClass, self).get_serializer_context()
+        context = super(UserAtendsForClass, self).get_serializer_context()
         context.update({"class_id": class_.id})
         return context
     def get(self, request,pk):
