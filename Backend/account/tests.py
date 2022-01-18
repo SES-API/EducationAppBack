@@ -17,11 +17,11 @@ class NotLoggedInAccountTest(TestCase):
     def test_api_register(self):
         url = reverse("account:register")
 
-        data =  {"username" : "test_user", "password" : "Ab654321", "email" : "test_email@test.com"}
+        data =  {"username" : "test_user", "password" : "Ab654321", "email" : "test_email@test.com" , "first_name":"testname","last_name":"test_last_name"}
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        data =  {"username" : "test_user", "password" : "4321", "email" : "test_email@test.com"}
+        data =  {"username" : "test_user", "password" : "4321", "email" : "test_email@test.com" , "first_name":"testname","last_name":"test_last_name"}
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
