@@ -34,6 +34,11 @@ class StudentAtend(serializers.ModelSerializer):
     class Meta:
         model = atend
         fields="__all__"
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # We pass the "upper serializer" context to the "nested one"
+        self.fields['student'].context.update(self.context)
+        
 
 
 
@@ -46,6 +51,10 @@ class SessionsSerializers(serializers.ModelSerializer):
         extra_kwargs = {
             # '' : {'':},
         }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # We pass the "upper serializer" context to the "nested one"
+        self.fields['atends'].context.update(self.context)
 
 class MyAtendSerializers(serializers.ModelSerializer):
     session_name = serializers.SerializerMethodField()
@@ -61,6 +70,10 @@ class MyAtendSerializers(serializers.ModelSerializer):
         extra_kwargs = {
             # '' : {'':},
         }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # We pass the "upper serializer" context to the "nested one"
+        self.fields['student'].context.update(self.context)
 
     def get_session_name(self,obj):
         session=Session.objects.filter(atends=obj)[0]

@@ -108,7 +108,8 @@ class QuestionObject(RetrieveUpdateDestroyAPIView):
     def get_serializer_context(self):
         question_id = self.kwargs['pk']
         assignment_id = Question.objects.filter(id=question_id).first().assignment_id
-        return {'assignment_id':assignment_id}
+        assignment_=Assignment.objects.filter(id=assignment_id).first()
+        return {'assignment_id':assignment_id,'class_id':assignment_.class_id.id}
 
     def delete(self, request, *args, **kwargs):
         question_id = self.kwargs['pk']
@@ -168,8 +169,8 @@ class AssignmentList(ListAPIView):
         if (user in class_.teachers.all() or
             user in class_.tas.all() or
             user == class_.headta):
-            return {'user_id': self.request.user.id , 'is_student':False}
-        return {'user_id': self.request.user.id , 'is_student':True}
+            return {'user_id': self.request.user.id , 'is_student':False,'class_id':class_.id}
+        return {'user_id': self.request.user.id , 'is_student':True,'class_id':class_.id}
         
 
     def get_queryset(self):
@@ -201,8 +202,8 @@ class AssignmentGrades(ListAPIView):
         if (user in class_.teachers.all() or
             user in class_.tas.all() or
             user == class_.headta):
-            return {'user_id': self.request.user.id , 'is_student':False}
-        return {'user_id': self.request.user.id , 'is_student':True}
+            return {'user_id': self.request.user.id , 'is_student':False,'class_id':class_.id}
+        return {'user_id': self.request.user.id , 'is_student':True,'class_id':class_.id}
         
 
     def get_queryset(self):

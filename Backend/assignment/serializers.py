@@ -24,14 +24,20 @@ class GradeSerializer(serializers.ModelSerializer):
         model = Grade
         list_serializer_class = GradeListSerializer
         fields=['value', 'delay', 'user_id', 'final_grade']
-
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # We pass the "upper serializer" context to the "nested one"
+        self.fields['user_id'].context.update(self.context)
 
 
 class QuestionSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     question_grade=GradeSerializer(many=True, required=False)
     is_graded = serializers.SerializerMethodField('get_is_graded')
-
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # We pass the "upper serializer" context to the "nested one"
+        self.fields['question_grade'].context.update(self.context)
     def get_is_graded(self, question):
         is_student = self.context.get('is_student')
         if(is_student):
@@ -138,6 +144,10 @@ class AssignmentGradeSerializer(serializers.ModelSerializer):
         model = AssignmentGrade
         list_serializer_class = AssignmentGradeListSerializer
         fields=['value', 'user_id', 'assignment_id']
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # We pass the "upper serializer" context to the "nested one"
+        self.fields['user_id'].context.update(self.context) 
 
 
 
@@ -145,7 +155,11 @@ class AssignmentRetrieveSerializer(serializers.ModelSerializer):
     assignment_question=QuestionSerializer(many=True)
     assignment_grade=AssignmentGradeSerializer(many=True, read_only=True)
     is_graded = serializers.SerializerMethodField('get_is_graded')
-
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # We pass the "upper serializer" context to the "nested one"
+        self.fields['assignment_question'].context.update(self.context)
+        self.fields['assignment_grade'].context.update(self.context)
     def get_is_graded(self, assignment):
         is_student = self.context.get('is_student')
         if(is_student):

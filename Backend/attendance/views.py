@@ -21,6 +21,11 @@ class SessionsOfClass(GenericAPIView):
     filterset_fields = ['name','date','atends']
     permission_classes=[IsAuthenticated]
     serializer_class = SessionsSerializers
+    def get_serializer_context(self):
+        class_=Class.objects.filter(id=self.kwargs['pk'])
+        context = super(SessionsOfClass, self).get_serializer_context()
+        context.update({"class_id": class_.id})
+        return context
     def get(self, request,pk):
         class_=Class.objects.filter(id=pk)
         if(class_):
@@ -63,6 +68,7 @@ class SessionsUpdate(UpdateAPIView):
     queryset=Session.objects.all()
 
 
+
 class SessionDestroy(DestroyAPIView):
     permission_classes=[OBJ__IsClassOwnerORTeacherORTa]
     serializer_class = SessionsSerializers
@@ -101,6 +107,11 @@ class UserAtendsForClass(GenericAPIView):
     filterset_fields = ['Present']
     permission_classes=[IsAuthenticated]
     serializer_class = MyAtendSerializers
+    def get_serializer_context(self):
+        class_=Class.objects.filter(id=self.kwargs['pk'])
+        context = super(SessionsOfClass, self).get_serializer_context()
+        context.update({"class_id": class_.id})
+        return context
     def get(self, request,pk):
         class_=Class.objects.filter(id=pk)
         if(class_):
