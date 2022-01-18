@@ -22,9 +22,8 @@ class SessionsOfClass(GenericAPIView):
     permission_classes=[IsAuthenticated]
     serializer_class = SessionsSerializers
     def get_serializer_context(self):
-        class_=Class.objects.filter(id=self.kwargs['pk'])
         context = super(SessionsOfClass, self).get_serializer_context()
-        context.update({"class_id": class_.id})
+        context.update({"class_id": self.kwargs['pk']})
         return context
     def get(self, request,pk):
         class_=Class.objects.filter(id=pk)
@@ -108,9 +107,8 @@ class UserAtendsForClass(GenericAPIView):
     permission_classes=[IsAuthenticated]
     serializer_class = MyAtendSerializers
     def get_serializer_context(self):
-        class_=Class.objects.filter(id=self.kwargs['pk'])
         context = super(UserAtendsForClass, self).get_serializer_context()
-        context.update({"class_id": class_.id})
+        context.update({"class_id":self.kwargs['pk']})
         return context
     def get(self, request,pk):
         class_=Class.objects.filter(id=pk)
