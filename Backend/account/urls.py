@@ -16,4 +16,7 @@ urlpatterns = [
     path('profile/<int:pk>', GetProfileView.as_view(), name='profile'),
     path('settings/profile/', UpdateProfileView.as_view(), name='settings_profile'),
     path('settings/delete/', DeleteUserView.as_view(), name='settings_delete'),
+    #add, see list, search by name of degree
+    path('degree/', DegreeList.as_view(), name='degree'),
+
 ]

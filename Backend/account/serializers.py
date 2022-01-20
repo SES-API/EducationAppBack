@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
 from django.shortcuts import get_object_or_404
 from datetime import date
+from .models import Degree
 
 User_Model=get_user_model()
 
@@ -129,6 +130,15 @@ class GetUserDataSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    # degree_name = serializers.SerializerMethodField('get_degree')
+
+    # def get_degree(self,obj):
+    #     print(obj)
+    #     print(obj.degree)
+    #     if(obj.degree):
+    #         return obj.degree.name
+    #     else:
+    #         return "None"
     
     class Meta:
         model = User_Model
@@ -141,7 +151,8 @@ class ProfileSerializer(serializers.ModelSerializer):
             'degree',
             'university',
             'profile_pic',
-            'is_hidden'
+            'is_hidden',
+            # 'degree_name'
         ]
 
 
@@ -153,3 +164,9 @@ class ProfileSerializer(serializers.ModelSerializer):
             if age < 10:
                 raise serializers.ValidationError('You must be at least 10 years old')
         return data
+
+
+class DegreeListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Degree
+        fields="__all__"

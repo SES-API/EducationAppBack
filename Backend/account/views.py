@@ -16,9 +16,12 @@ from rest_framework.response import Response
 from rest_framework import status
 import random
 import threading
+from rest_framework import filters
+
 #-----------------------------
 from .serializers import *
 from .permissions import *
+from .models import Degree
 # Create your views here.
 
 User_Model = get_user_model()
@@ -243,3 +246,13 @@ class DeleteUserView(DestroyAPIView):
         user_id = self.request.user.id
         queryset = User_Model.objects.get(id=user_id)
         return queryset
+
+
+#degree
+
+class DegreeList(ListCreateAPIView):
+    queryset=Degree.objects.all()
+    serializer_class=DegreeListSerializer
+    permission_classes=[IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']

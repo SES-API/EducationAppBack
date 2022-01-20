@@ -24,7 +24,7 @@ class StudentSerializer(serializers.ModelSerializer):
     def get_student_id(self,obj):
         # pk=self.context.get('request').parser_context.get('kwargs').get('pk')
         # class_=Class.objects.filter(id=pk).first()
-        print(self.context)
+        # print(self.context)
         session=ClassStudents.objects.filter(student=obj,Class=self.context['class_id'])
         if(session):
             session = session.first()
