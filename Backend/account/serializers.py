@@ -121,7 +121,7 @@ class GetUserDataSerializer(serializers.ModelSerializer):
         if model.profile_pic:
             request = self.context.get("request")
             base_url = request.build_absolute_uri('/').strip("/")
-            profile_url = base_url + '/images/' + f"{model.profile_pic}"
+            profile_url = base_url + '/media/' + f"{model.profile_pic}"
             return profile_url
 
     class Meta:
