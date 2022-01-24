@@ -107,7 +107,7 @@ class QuestionObject(RetrieveUpdateDestroyAPIView):
 
     def get_serializer_context(self):
         question_id = self.kwargs['pk']
-        assignment_id = Question.objects.filter(id=question_id).first().assignment_id
+        assignment_id = Question.objects.filter(id=question_id).first().assignment_id.id
         assignment_=Assignment.objects.filter(id=assignment_id).first()
         return {'assignment_id':assignment_id,'class_id':assignment_.class_id.id}
 
