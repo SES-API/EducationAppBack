@@ -1,0 +1,46 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CD
+on: 
+  push :
+    branches: [ develop ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    - uses: actions/checkout@v2
+    - name: deploy
+      uses: garygrossgarten/github-action-ssh@release
+      with:
+        command: |
+         cd sesapi
+         git pull origin develop
+         pip install -r requirements.txt
+         cd Backend
+         python3 manage.py migrate
+         sudo systemctl restart gunicorn
+         sudo systemctl restart nginx
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        privateKey: ${{ secrets.KEY}}
+        
+        
+      
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+
+#     - name: executing remote ssh commands using ssh key
+#       run: |
+#          ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }}
+#          cd sesapi
+#          git pull origin develop
+#          pip install -r requirements.txt
+#          cd Backend
+#          python3 manage.py migrate
+#          sudo systemctl restart gunicorn
+#          sudo systemctl restart nginx
